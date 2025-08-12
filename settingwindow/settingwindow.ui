@@ -315,7 +315,7 @@
          <item row="0" column="1">
           <widget class="QCheckBox" name="keepAliveCheckBox">
            <property name="toolTip">
-            <string>连接服务器后自动设置代理</string>
+            <string>定时连接 www.baidu.com，防止掉线。但在一些VPN服务器上会导致连接断开</string>
            </property>
            <property name="text">
             <string>定时保活</string>
@@ -342,7 +342,7 @@
          <item row="0" column="2">
           <widget class="QCheckBox" name="outsideAccessCheckBox">
            <property name="toolTip">
-            <string>连接服务器后自动设置代理</string>
+            <string>允许通过非本地回环地址访问，如局域网内的其他设备</string>
            </property>
            <property name="text">
             <string>允许外部访问</string>
@@ -358,6 +358,9 @@
          </item>
          <item row="1" column="2">
           <widget class="QCheckBox" name="proxyAllCheckBox">
+           <property name="toolTip">
+            <string>无视VPN服务器配置，代理所有网络流量。几乎肯定会导致VPN服务器断开连接。</string>
+           </property>
            <property name="text">
             <string>代理全部流量</string>
            </property>
