@@ -73,6 +73,9 @@ elseif(APPLE)
         ${SOURCE_FILES}
         ${app_icon_macos}
     )
+
+    set_target_properties(${PROJECT_NAME}
+        PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resource/Info.plist")
 else()
     add_executable(${PROJECT_NAME}
         ${SOURCE_FILES}
