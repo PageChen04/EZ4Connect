@@ -27,13 +27,7 @@ find_package(Qt6 COMPONENTS
     Svg
     Core5Compat
     WebEngineWidgets
-    LinguistTools
     REQUIRED
-)
-
-qt_standard_project_setup(
-    I18N_SOURCE_LANGUAGE zh_CN
-    I18N_TRANSLATED_LANGUAGES zh_CN
 )
 
 set(SOURCE_FILES
@@ -82,6 +76,24 @@ elseif(APPLE)
 
     set_target_properties(${PROJECT_NAME}
         PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resource/Info.plist")
+
+    # macdeployqt has a bug that it doesn't copy the Qt translations to the bundle
+    # so we need to copy them manually
+
+    # Get the path to the qmake executable
+    get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+
+    # Query qmake for the location of the installed Qt translations
+    execute_process(
+        COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_TRANSLATIONS
+        OUTPUT_VARIABLE QT_TRANSLATIONS
+    )
+
+    string(STRIP "${QT_TRANSLATIONS}" QT_TRANSLATIONS)
+
+    message(STATUS "Found Qt translations in: ${QT_TRANSLATIONS}")
+
+    file(COPY ${QT_TRANSLATIONS}/qt_zh_CN.qm DESTINATION ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.app/Contents/Resources/translations)
 else()
     add_executable(${PROJECT_NAME}
         ${SOURCE_FILES}
@@ -93,11 +105,9 @@ else()
     )
 endif()
 
-qt_add_translations(${PROJECT_NAME})
-
 set(QAPPLICATION_CLASS QApplication CACHE STRING "Inheritance class for SingleApplication")
 
-add_subdirectory(singleapplication MERGE_QT_TRANSLATIONS)
+add_subdirectory(singleapplication)
 
 target_link_libraries(${PROJECT_NAME}
         Qt::Core
