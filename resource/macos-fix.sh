@@ -89,7 +89,7 @@ fi
 
 # 最后签名主应用
 echo "签名: /Applications/$appBashName"
-sudo codesign --verbose --sign - --force /Applications/"$appBashName"
+sudo codesign --verbose --sign - --force --deep /Applications/"$appBashName"
 
 echo -e "${GREEN}========== 修复完成 ==========${NC}"
 echo -e "${YELLOW}可关闭此窗口${NC}"
