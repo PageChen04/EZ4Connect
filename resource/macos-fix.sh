@@ -30,7 +30,7 @@ appPath=$( find "$parentPath" -name '*.app' -maxdepth 1)
 if [[ -z "$appPath" ]]
 then
     echo -e "${RED}❌ 错误：${NC}未找到应用"
-    echo "${YELLOW}可关闭此窗口${NC}"
+    echo -e "${YELLOW}可关闭此窗口${NC}"
     exit 1
 fi
 
@@ -57,6 +57,39 @@ echo
 echo -e "${GREEN}========== 开始修复 ==========${NC}"
 sudo xattr -rd com.apple.quarantine /Applications/"$appBashName"
 sudo xattr -rc /Applications/"$appBashName"
-sudo codesign --sign - --force --deep /Applications/"$appBashName"
+
+# 遍历并签名所有 framework（签名 Versions 下的具体版本目录，而非符号链接）
+frameworksPath="/Applications/${appBashName}/Contents/Frameworks"
+if [[ -d "$frameworksPath" ]]; then
+    # 签名 .framework 中的具体版本
+    for framework in "$frameworksPath"/*.framework; do
+        if [[ -d "$framework/Versions" ]]; then
+            for version in "$framework/Versions"/*; do
+                # 跳过 Current 符号链接
+                if [[ -d "$version" && ! -L "$version" ]]; then
+                    echo "签名: $version"
+                    sudo codesign --verbose --sign - --force "$version"
+                fi
+            done
+        else
+            # 没有 Versions 目录的 framework 直接签名
+            echo "签名: $framework"
+            sudo codesign --verbose --sign - --force "$framework"
+        fi
+    done
+
+    # 签名 Frameworks 目录中的 .app（如 Helper apps）
+    for helperApp in "$frameworksPath"/*.app; do
+        if [[ -d "$helperApp" ]]; then
+            echo "签名: $helperApp"
+            sudo codesign --verbose --sign - --force "$helperApp"
+        fi
+    done
+fi
+
+# 最后签名主应用
+echo "签名: /Applications/$appBashName"
+sudo codesign --verbose --sign - --force /Applications/"$appBashName"
+
 echo -e "${GREEN}========== 修复完成 ==========${NC}"
 echo -e "${YELLOW}可关闭此窗口${NC}"
