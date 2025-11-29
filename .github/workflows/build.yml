@@ -27,7 +27,7 @@ jobs:
   build-windows-x64:
     runs-on: windows-latest
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-windows-x64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-windows-x64
     steps:
       - uses: actions/checkout@v4
 
@@ -49,7 +49,7 @@ jobs:
         run: |
           mkdir build
           if ( [bool]::Parse("${{ env.NIGHTLY_BUILD }}") ) {
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH="$(git rev-parse --short=7 HEAD)" -DCMAKE_BUILD_TYPE=Release -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH="$(git rev-parse --short=7 HEAD)" -DCMAKE_BUILD_TYPE=Release -S . -B build
           } else {
             $VER = "${{ env.RELEASE_VERSION }}".substring(1)
             cmake -DNIGHTLY_BUILD=OFF -DREL_VER="$VER" -DCMAKE_BUILD_TYPE=Release -S . -B build
@@ -82,9 +82,9 @@ jobs:
           path: ${{ env.ARCHIVE_NAME }}.zip
 
   build-windows-arm64:
-    runs-on: windows-latest
+    runs-on: windows-11-arm
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-windows-arm64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-windows-arm64
     steps:
       - uses: actions/checkout@v4
 
@@ -92,37 +92,25 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
-          host: 'windows'
+          host: 'windows_arm64'
           target: 'desktop'
-          arch: 'win64_msvc2022_64'
+          arch: 'win64_msvc2022_arm64'
           modules: 'qt5compat qtpositioning qtwebchannel qtwebengine'
           cache: 'true'
-          cache-key-prefix: 'install-qt-action-win64_msvc2022_64'
-          set-env: 'false'
-
-      - name: Install target Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2022_arm64_cross_compiled'
-          modules: 'qt5compat qtpositioning qtwebchannel qtwebengine'
-          cache: 'true'
-          cache-key-prefix: 'install-qt-action-win64_msvc2022_arm64_cross_compiled'
+          cache-key-prefix: 'install-qt-action-win64_msvc2022_arm64'
+          aqtsource: 'git+https://github.com/miurahr/aqtinstall.git'  # workaround for Qt6 WebEngine on Windows ARM64
 
       - name: Configure
         env:
           NIGHTLY_BUILD: ${{ inputs.nightly || github.event_name != 'release' }}
           RELEASE_VERSION: ${{ inputs.version || github.event.release.tag_name }}
-          QT_HOST_PATH: ${{ github.workspace }}\..\Qt\${{ env.QT_VERSION }}\msvc2022_64
         run: |
           mkdir build
           if ( [bool]::Parse("${{ env.NIGHTLY_BUILD }}") ) {
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH="$(git rev-parse --short=7 HEAD)" -DCMAKE_BUILD_TYPE=Release -DQT_HOST_PATH="${{ env.QT_HOST_PATH }}" -A ARM64 -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH="$(git rev-parse --short=7 HEAD)" -DCMAKE_BUILD_TYPE=Release -S . -B build
           } else {
             $VER = "${{ env.RELEASE_VERSION }}".substring(1)
-            cmake -DNIGHTLY_BUILD=OFF -DREL_VER="$VER" -DCMAKE_BUILD_TYPE=Release -DQT_HOST_PATH="${{ env.QT_HOST_PATH }}" -A ARM64 -S . -B build
+            cmake -DNIGHTLY_BUILD=OFF -DREL_VER="$VER" -DCMAKE_BUILD_TYPE=Release -S . -B build
           }
 
       - name: Build
@@ -136,7 +124,7 @@ jobs:
           mkdir "${{ env.DISPLAY_NAME }}"
           cd "${{ env.DISPLAY_NAME }}"
           cp ../build/Release/${{ env.TARGET_NAME }}.exe .
-          & "$env:Qt6_DIR\..\msvc2022_64\bin\windeployqt.exe" --qtpaths "$env:Qt6_DIR/bin/qtpaths.bat" ${{ env.TARGET_NAME }}.exe
+          windeployqt.exe ${{ env.TARGET_NAME }}.exe
           curl -LO https://github.com/chenx-dust/zju-connect/releases/latest/download/zju-connect-windows-arm64.zip
           tar -xf zju-connect-windows-arm64.zip
           rm zju-connect-windows-arm64.zip
@@ -154,7 +142,7 @@ jobs:
   build-macos-x64:
     runs-on: macos-13
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-macos-x64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-macos-x64
     steps:
       - uses: actions/checkout@v4
 
@@ -176,7 +164,7 @@ jobs:
         run: |
           mkdir build
           if ${{ env.NIGHTLY_BUILD }} ; then
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -DCMAKE_OSX_ARCHITECTURES="x86_64" -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -DCMAKE_OSX_ARCHITECTURES="x86_64" -S . -B build
           else
             VER=${{ env.RELEASE_VERSION }}
             cmake -DNIGHTLY_BUILD=OFF -DREL_VER=${VER#v} -DCMAKE_OSX_ARCHITECTURES="x86_64" -S . -B build
@@ -231,7 +219,7 @@ jobs:
   build-macos-arm64:
     runs-on: macos-13
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-macos-arm64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-macos-arm64
     steps:
       - uses: actions/checkout@v4
 
@@ -253,7 +241,7 @@ jobs:
         run: |
           mkdir build
           if ${{ env.NIGHTLY_BUILD }} ; then
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -DCMAKE_OSX_ARCHITECTURES="arm64" -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -DCMAKE_OSX_ARCHITECTURES="arm64" -S . -B build
           else
             VER=${{ env.RELEASE_VERSION }}
             cmake -DNIGHTLY_BUILD=OFF -DREL_VER=${VER#v} -DCMAKE_OSX_ARCHITECTURES="arm64" -S . -B build
@@ -308,7 +296,7 @@ jobs:
   build-linux-x64:
     runs-on: ubuntu-22.04
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-linux-x64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-linux-x64
     steps:
       - uses: actions/checkout@v4
 
@@ -330,7 +318,7 @@ jobs:
         run: |
           mkdir build
           if ${{ env.NIGHTLY_BUILD }} ; then
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -S . -B build
           else
             VER=${{ env.RELEASE_VERSION }}
             cmake -DNIGHTLY_BUILD=OFF -DREL_VER=${VER#v} -S . -B build
@@ -378,7 +366,7 @@ jobs:
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
     env:
-      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}-linux-arm64
+      ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}-linux-arm64
     steps:
       - uses: actions/checkout@v4
         
@@ -405,7 +393,7 @@ jobs:
         run: |
           mkdir build
           if ${{ env.NIGHTLY_BUILD }} ; then
-            cmake -DNIGHTLY_BUILD=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -S . -B build
+            cmake -DNIGHTLY_BUILD=ON -DQT_DEBUG_FIND_PACKAGE=ON -DGIT_HASH=$(git rev-parse --short=7 HEAD) -S . -B build
           else
             VER=${{ env.RELEASE_VERSION }}
             cmake -DNIGHTLY_BUILD=OFF -DREL_VER=${VER#v} -S . -B build
@@ -455,13 +443,13 @@ jobs:
     if: github.event_name == 'release'
     needs:
       - build-windows-x64
-      # - build-windows-arm64
+      - build-windows-arm64
       - build-macos-x64
       - build-macos-arm64
       - build-linux-x64
       - build-linux-arm64
     env:
-      ARCHIVE_PREFIX: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}
+      ARCHIVE_PREFIX: ${{ github.event.repository.name }}-${{ github.event.release.tag_name || 'nightly' }}
     steps:
       - uses: actions/checkout@v4
 
