@@ -22,8 +22,10 @@ int main(int argc, char *argv[])
 #endif
 
     QTranslator qtTranslator;
+    QString translationsPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+    qDebug() << "Translations path: " << translationsPath;
     if (qtTranslator.load(QLocale(QLocale::Chinese, QLocale::SimplifiedChineseScript, QLocale::China),
-                          QString("qt"), QString("_"), QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+                          QString("qt"), QString("_"), translationsPath))
         app.installTranslator(&qtTranslator);
     else
         qDebug() << "Failed to load qt_zh_CN.qm";

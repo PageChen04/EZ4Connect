@@ -27,14 +27,9 @@ find_package(Qt6 COMPONENTS
     Svg
     Core5Compat
     WebEngineWidgets
-    LinguistTools
     REQUIRED
 )
 
-qt_standard_project_setup(
-    I18N_SOURCE_LANGUAGE zh_CN
-    I18N_TRANSLATED_LANGUAGES zh_CN
-)
 
 set(SOURCE_FILES
     main.cpp
@@ -99,7 +94,7 @@ elseif(APPLE)
 
     message(STATUS "Found Qt translations in: ${QT_TRANSLATIONS}")
 
-    file(COPY ${QT_TRANSLATIONS}/qt_zh_CN.qm DESTINATION ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.app/Contents/Resources/translations)
+    file(COPY ${QT_TRANSLATIONS} DESTINATION ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.app/Contents)
 else()
     add_executable(${PROJECT_NAME}
         ${SOURCE_FILES}
@@ -110,8 +105,6 @@ else()
         RUNTIME DESTINATION bin
     )
 endif()
-
-qt_add_translations(${PROJECT_NAME} MERGE_QT_TRANSLATIONS)
 
 set(QAPPLICATION_CLASS QApplication CACHE STRING "Inheritance class for SingleApplication")
 
