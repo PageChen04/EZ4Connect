@@ -27,7 +27,13 @@ find_package(Qt6 COMPONENTS
     Svg
     Core5Compat
     WebEngineWidgets
+    LinguistTools
     REQUIRED
+)
+
+qt_standard_project_setup(
+    I18N_SOURCE_LANGUAGE zh_CN
+    I18N_TRANSLATED_LANGUAGES zh_CN
 )
 
 set(SOURCE_FILES
@@ -87,9 +93,11 @@ else()
     )
 endif()
 
+qt_add_translations(${PROJECT_NAME})
+
 set(QAPPLICATION_CLASS QApplication CACHE STRING "Inheritance class for SingleApplication")
 
-add_subdirectory(singleapplication)
+add_subdirectory(singleapplication MERGE_QT_TRANSLATIONS)
 
 target_link_libraries(${PROJECT_NAME}
         Qt::Core

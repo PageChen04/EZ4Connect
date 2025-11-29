@@ -165,11 +165,12 @@ Line 2
     </property>
     <addaction name="disableProxyAction"/>
     <addaction name="checkUpdateAction"/>
+    <addaction name="projectAction"/>
     <addaction name="aboutAction"/>
    </widget>
    <widget class="QMenu" name="fileMenu">
     <property name="title">
-     <string>功能</string>
+     <string>文件</string>
     </property>
     <addaction name="settingAction"/>
     <addaction name="exitAction"/>
@@ -184,15 +185,24 @@ Line 2
    <property name="toolTip">
     <string>关于本软件</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutRole</enum>
+   </property>
   </action>
   <action name="exitAction">
    <property name="text">
     <string>退出</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::QuitRole</enum>
+   </property>
   </action>
   <action name="settingAction">
    <property name="text">
     <string>设置</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="webLoginAction">
@@ -216,6 +226,11 @@ Line 2
   <action name="checkUpdateAction">
    <property name="text">
     <string>检查更新</string>
+   </property>
+  </action>
+  <action name="projectAction">
+   <property name="text">
+    <string>项目主页</string>
    </property>
   </action>
  </widget>

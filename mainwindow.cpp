@@ -133,6 +133,13 @@ MainWindow::MainWindow(QWidget *parent) :
                 checkUpdate();
             });
 
+    // 帮助-项目主页
+    connect(ui->projectAction, &QAction::triggered,
+            [&]()
+            {
+                QDesktopServices::openUrl(QUrl("https://github.com/" + Utils::REPO_NAME));
+            });
+
     // 帮助-关于本软件
     connect(ui->aboutAction, &QAction::triggered,
             [&]()
