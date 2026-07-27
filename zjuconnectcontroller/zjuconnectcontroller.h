@@ -3,31 +3,15 @@
 
 #include <QtCore>
 
+#include "core/connectionerror.h"
 #include "core/connectionprofile.h"
-
-enum class ZJU_ERROR
-{
-    NONE,
-    INVALID_DETAIL,
-    BRUTE_FORCE,
-    OTHER_LOGIN_FAILED,
-    ACCESS_DENIED,
-    LISTEN_FAILED,
-    CLIENT_FAILED,
-    CAPTCHA_FAILED,
-    PROGRAM_NOT_FOUND,
-    INTERACTIVE_ERROR,
-    AUTH_NOT_AVAILABLE,
-    AUTH_EXPIRED,
-    OTHER,
-};
 
 class ZjuConnectController : public QObject
 {
 Q_OBJECT
 
 public:
-    ZjuConnectController(QWidget* parent);
+    explicit ZjuConnectController(QObject *parent = nullptr);
 
     ~ZjuConnectController() override;
 
@@ -35,6 +19,7 @@ public:
 
     void stop();
 
+    void writeInput(const QByteArray &data);
 
 signals:
 
@@ -52,9 +37,9 @@ signals:
 
     void askSudoPass();
 
-    void finished();
+    void started();
 
-    void write(const QByteArray &data);
+    void finished();
 
 private:
     QString copyCoreForAppImage(const QString &programPath);
@@ -69,10 +54,6 @@ private:
     QTextStream *logStream = nullptr;
     bool stopRequested = false;
 
-public:
-    bool savedSudoPassword;
-    bool enteredSudoPassword;
-    QString sudoPassword;
 };
 
 #endif //ZJUCONNECTCONTROLLER_H

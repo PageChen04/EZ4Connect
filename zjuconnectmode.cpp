@@ -17,72 +17,38 @@
 
 void MainWindow::initZjuConnect()
 {
-    if (zjuConnectController != nullptr)
+    if (connectionSession != nullptr)
     {
         return;
     }
 
     clearLog();
 
-    zjuConnectController = new ZjuConnectController(this);
+    connectionSession = new ConnectionSession(this);
     resetZjuConnectUi();
 
     // 连接服务器
-    connect(zjuConnectController, &ZjuConnectController::outputRead, this,
+    connect(connectionSession, &ConnectionSession::outputRead, this,
         [&](const QString &output)
         {
             ui->logPlainTextEdit->appendPlainText(output.trimmed());
         });
 
-    connect(zjuConnectController, &ZjuConnectController::error, this,
-        [&](ZJU_ERROR err)
-        {
-            if (zjuConnectError == ZJU_ERROR::NONE)
-            {
-                zjuConnectError = err;
-            }
-        });
+    connect(connectionSession, &ConnectionSession::savedSudoPasswordRejected, this,
+            [&]() { addLog("sudo 密码可能有误，不使用记住的密码"); });
 
-    connect(zjuConnectController, &ZjuConnectController::askSudoPass, this,
+    connect(connectionSession, &ConnectionSession::askSudoPass, this,
         [&]()
         {
-            if (zjuConnectController->savedSudoPassword)
-            {
-                if (zjuConnectController->enteredSudoPassword)
-                {
-                    addLog("sudo 密码可能有误，不使用记住的密码");
-                    zjuConnectController->savedSudoPassword = false;
-                    zjuConnectController->sudoPassword.clear();
-                }
-                else
-                {
-                    zjuConnectController->enteredSudoPassword = true;
-                    emit WriteToProcess(zjuConnectController->sudoPassword.toUtf8() + "\n");
-                    return;
-                }
-            }
             sudoWindow = new SudoWindow(this);
             connect(sudoWindow, &SudoWindow::sudo, this, [&](const QString &password, bool save)
             {
-                if (password.isEmpty())
-                {
-                    zjuConnectController->stop();
-                }
-                else
-                {
-                    if (save)
-                    {
-                        zjuConnectController->savedSudoPassword = true;
-                        zjuConnectController->sudoPassword = password;
-                    }
-                    zjuConnectController->enteredSudoPassword = true;
-                    emit WriteToProcess(password.toUtf8() + "\n");
-                }
+                connectionSession->submitSudoPassword(password, save);
             });
             sudoWindow->show();
         });
 
-    connect(zjuConnectController, &ZjuConnectController::graphCaptcha, this,
+    connect(connectionSession, &ConnectionSession::graphCaptcha, this,
         [&](const QString &graphFile) {
             addLog("需要图形验证码");
             graphCaptchaWindow = new GraphCaptchaWindow(this);
@@ -90,11 +56,11 @@ void MainWindow::initZjuConnect()
             graphCaptchaWindow->show();
             connect(graphCaptchaWindow, &GraphCaptchaWindow::finishCaptcha, this, [&](const QByteArray &captcha) {
                 addLog("图形验证码用户输入：" + captcha);
-                emit WriteToProcess(captcha + "\n");
+                connectionSession->submitInput(captcha + "\n");
             });
         });
 
-    connect(zjuConnectController, &ZjuConnectController::smsCode, this, [&](bool showSkipSecondaryAuthOption) {
+    connect(connectionSession, &ConnectionSession::smsCode, this, [&](bool showSkipSecondaryAuthOption) {
         addLog("需要短信验证码");
 
         QDialog smsCodeDialog(this);
@@ -130,20 +96,20 @@ void MainWindow::initZjuConnect()
         {
             smsCodeInput.prepend('$');
         }
-        emit WriteToProcess(smsCodeInput + "\n");
+        connectionSession->submitInput(smsCodeInput + "\n");
     });
 
-    connect(zjuConnectController, &ZjuConnectController::totpCode, this, [&]() {
+    connect(connectionSession, &ConnectionSession::totpCode, this, [&]() {
         addLog("需要 TOTP 验证码");
         QString totp = QInputDialog::getText(this, "TOTP 验证码", "请输入 TOTP 验证码：");
         addLog("TOTP 验证码用户输入：" + totp);
-        emit WriteToProcess(totp.toLocal8Bit() + "\n");
+        connectionSession->submitInput(totp.toLocal8Bit() + "\n");
     });
 
-    connect(zjuConnectController, &ZjuConnectController::ssoAuth, this, [&]() {
+    connect(connectionSession, &ConnectionSession::ssoAuth, this, [&]() {
         ssoLoginWebView = new SsoLoginWebView(this);
         connect(ssoLoginWebView, &SsoLoginWebView::loginCompleted,
-                [=](const QString &url) { emit WriteToProcess(url.toLocal8Bit() + "\n"); });
+                [=](const QString &url) { connectionSession->submitInput(url.toLocal8Bit() + "\n"); });
 
         QString serverHost = settings->value("ZJUConnect/ServerAddress", "trust.hitsz.edu.cn").toString();
         int serverPort = settings->value("ZJUConnect/ServerPort", 443).toInt();
@@ -164,36 +130,18 @@ void MainWindow::initZjuConnect()
         ssoLoginWebView->show();
     });
 
-    connect(zjuConnectController, &ZjuConnectController::finished, this, [&]()
+    connect(connectionSession, &ConnectionSession::reconnectScheduled, this, [&](int)
+    {
+        addLog("正在尝试重新连接...");
+    });
+
+    connect(connectionSession, &ConnectionSession::finished, this, [&](ZJU_ERROR error)
     {
         addLog("VPN 断开！");
-        if (
-            (zjuConnectError == ZJU_ERROR::AUTH_EXPIRED || zjuConnectError == ZJU_ERROR::OTHER) &&
-            settings->value("Common/AutoReconnect", false).toBool() &&
-            isZjuConnectLinked
-            )
-        {
-            QTimer::singleShot(settings->value("Common/ReconnectTime", 1).toInt() * 1000, this, [&]()
-            {
-                if (isZjuConnectLinked)
-                {
-                    addLog("正在尝试重新连接...");
-                    zjuConnectController->stop();
-
-                    isZjuConnectLinked = false;
-                    isAutoReconnecting = true;
-                    ui->pushButton1->click();
-                }
-            });
-
-            return;
-        }
-
-        if (zjuConnectError != ZJU_ERROR::NONE)
+        if (error != ZJU_ERROR::NONE)
         {
             showNotification("VPN", "VPN 意外断开！", QSystemTrayIcon::MessageIcon::Warning);
         }
-        isZjuConnectLinked = false;
         ui->pushButton1->setText("连接服务器");
         trayConnectAction->setText("连接服务器");
         if (isSystemProxySet)
@@ -202,7 +150,7 @@ void MainWindow::initZjuConnect()
         }
         ui->pushButton2->hide();
 
-        switch (zjuConnectError)
+        switch (error)
         {
         case ZJU_ERROR::INVALID_DETAIL:
             QMessageBox::critical(this, "错误", "登录失败！\n请检查设置中的网络账号和密码是否设置正确。");
@@ -244,13 +192,12 @@ void MainWindow::initZjuConnect()
         default:
             break;
         }
-        zjuConnectError = ZJU_ERROR::NONE;
     });
 
     connect(ui->pushButton1, &QPushButton::clicked,
             [&]()
             {
-                if (!isZjuConnectLinked)
+                if (!connectionSession->isActive())
                 {
                     if (settings->contains("ZJUConnect/ServerAddress") &&
                         settings->value("ZJUConnect/ServerAddress").toString().isEmpty())
@@ -281,22 +228,23 @@ void MainWindow::initZjuConnect()
 #endif
 
                     auto startZjuConnect = [this](const QString &username, const QString &password) {
-                        isZjuConnectLinked = true;
-                        zjuConnectError = ZJU_ERROR::NONE;
                         ui->pushButton1->setText("断开服务器");
                         trayConnectAction->setText("断开服务器");
                         ui->pushButton2->show();
 
-                        if (!isAutoReconnecting && settings->value("Common/AutoSetProxy", false).toBool())
+                        if (settings->value("Common/AutoSetProxy", false).toBool())
                         {
                             ui->pushButton2->click();
                         }
-                        isAutoReconnecting = false;
 
                         ConnectionProfile profile =
                             SettingsProfileLoader::load(*settings, currentProfileId, username, password);
                         profile.program = Utils::getCorePath();
-                        zjuConnectController->start(profile);
+                        const ReconnectPolicy reconnectPolicy{
+                            settings->value("Common/AutoReconnect", false).toBool(),
+                            settings->value("Common/ReconnectTime", 1).toInt() * 1000
+                        };
+                        connectionSession->start(profile, reconnectPolicy);
                 	};
 
                     if (((protocol == "atrust" && authtype == "psw") ||
@@ -327,7 +275,7 @@ void MainWindow::initZjuConnect()
                 }
                 else
                 {
-                    zjuConnectController->stop();
+                    connectionSession->stop();
                 }
             });
 
@@ -377,7 +325,7 @@ void MainWindow::initZjuConnect()
                     Utils::clearSystemProxy();
                     ui->pushButton2->setText("设置系统代理");
                     isSystemProxySet = false;
-                    if (!isZjuConnectLinked)
+                    if (!connectionSession->isActive())
                     {
                         ui->pushButton2->hide();
                     }

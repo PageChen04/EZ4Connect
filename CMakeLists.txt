@@ -35,8 +35,10 @@ set(SOURCE_FILES
     main.cpp
     mainwindow.cpp
     zjuconnectmode.cpp
+    application/connectionsession.cpp
     core/corecommandbuilder.cpp
     core/coreoutputparser.cpp
+    core/connectionsessionstate.cpp
     infrastructure/settingsprofileloader.cpp
     zjuconnectcontroller/zjuconnectcontroller.cpp
     extrasettingwindow/extrasettingwindow.cpp
@@ -136,4 +138,12 @@ if(BUILD_TESTING)
     target_include_directories(settingsprofileloader_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(settingsprofileloader_test Qt::Core)
     add_test(NAME settingsprofileloader_test COMMAND settingsprofileloader_test)
+
+    add_executable(connectionsessionstate_test
+        tests/connectionsessionstate_test.cpp
+        core/connectionsessionstate.cpp
+    )
+    target_include_directories(connectionsessionstate_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(connectionsessionstate_test Qt::Core)
+    add_test(NAME connectionsessionstate_test COMMAND connectionsessionstate_test)
 endif()

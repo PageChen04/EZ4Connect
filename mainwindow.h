@@ -9,6 +9,7 @@
 #include <QSettings>
 #include <QPointer>
 
+#include "application/connectionsession.h"
 #include "loginwindow/loginwindow.h"
 #include "sudowindow/sudowindow.h"
 #include "ssologinwebview/ssologinwebview.h"
@@ -40,8 +41,6 @@ public slots:
 signals:
 
     void SetModeFinished();
-
-    void WriteToProcess(const QByteArray &data);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -98,7 +97,7 @@ private:
     QAction *newProfileAction;
     QAction *renameProfileAction;
     QAction *deleteProfileAction;
-    ZjuConnectController *zjuConnectController = nullptr;
+    ConnectionSession *connectionSession = nullptr;
     QNetworkAccessManager *checkUpdateNAM;
     QNetworkAccessManager *checkCoreUpdateNAM;
     QSettings *settings;
@@ -115,10 +114,7 @@ private:
 
     bool isFirstTimeSetMode;
 
-    bool isZjuConnectLinked;
     bool isSystemProxySet;
-    bool isAutoReconnecting = false;
-    ZJU_ERROR zjuConnectError;
 };
 
 #endif //MAINWINDOW_H
