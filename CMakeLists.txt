@@ -35,6 +35,7 @@ set(SOURCE_FILES
     main.cpp
     mainwindow.cpp
     zjuconnectmode.cpp
+    core/corecommandbuilder.cpp
     zjuconnectcontroller/zjuconnectcontroller.cpp
     extrasettingwindow/extrasettingwindow.cpp
     settingwindow/settingwindow.cpp
@@ -106,3 +107,15 @@ target_link_libraries(${PROJECT_NAME}
         SingleApplication::SingleApplication
         ${PLATFORM_LIBS}
 )
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(corecommandbuilder_test
+        tests/corecommandbuilder_test.cpp
+        core/corecommandbuilder.cpp
+    )
+    target_include_directories(corecommandbuilder_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(corecommandbuilder_test Qt::Core)
+    add_test(NAME corecommandbuilder_test COMMAND corecommandbuilder_test)
+endif()
