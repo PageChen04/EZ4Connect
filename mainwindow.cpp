@@ -37,9 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     upgradeSettings();
 
     isFirstTimeSetMode = true;
-    isZjuConnectLinked = false;
     isSystemProxySet = false;
-    zjuConnectError = ZJU_ERROR::NONE;
 
     ui->setupUi(this);
     setupTrayIcon();
@@ -353,7 +351,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (isZjuConnectLinked)
+    if (connectionSession != nullptr && connectionSession->isActive())
     {
         event->ignore();
         hide();
@@ -402,8 +400,6 @@ void MainWindow::clearLog()
 
 void MainWindow::resetZjuConnectUi()
 {
-    isZjuConnectLinked = false;
-    zjuConnectError = ZJU_ERROR::NONE;
     ui->pushButton1->setText("连接服务器");
     trayConnectAction->setText("连接服务器");
     ui->pushButton2->setText("设置系统代理");
@@ -581,7 +577,7 @@ bool MainWindow::switchProfile(const QString &profileId)
         return true;
     }
 
-    if (isZjuConnectLinked)
+    if (connectionSession != nullptr && connectionSession->isActive())
     {
         QMessageBox::warning(this, "切换失败", "请先断开 VPN 连接，再切换配置。");
         refreshProfileMenu();
@@ -657,7 +653,7 @@ void MainWindow::renameCurrentProfile()
     {
         return;
     }
-    if (isZjuConnectLinked)
+    if (connectionSession != nullptr && connectionSession->isActive())
     {
         QMessageBox::warning(this, "重命名失败", "请先断开 VPN 连接，再重命名配置。");
         return;
@@ -824,9 +820,10 @@ void MainWindow::cleanUpWhenQuit()
 
 void MainWindow::gracefullyQuit()
 {
-    if (isZjuConnectLinked)
+    if (connectionSession != nullptr && connectionSession->isActive())
     {
-        connect(zjuConnectController, &ZjuConnectController::finished, qApp, QApplication::quit);
+        connect(connectionSession, &ConnectionSession::finished, qApp,
+                [](ZJU_ERROR) { QApplication::quit(); });
         ui->pushButton1->click();
     }
     else
@@ -848,10 +845,11 @@ MainWindow::~MainWindow()
         delete profileManager;
     }
 
-    if (zjuConnectController != nullptr)
+    if (connectionSession != nullptr)
     {
-        disconnect(zjuConnectController, &ZjuConnectController::finished, nullptr, nullptr);
-        delete zjuConnectController;
+        disconnect(connectionSession, nullptr, this, nullptr);
+        delete connectionSession;
+        connectionSession = nullptr;
     }
 
     delete ui;

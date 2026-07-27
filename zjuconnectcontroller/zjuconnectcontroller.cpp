@@ -1,5 +1,4 @@
 #include "zjuconnectcontroller.h"
-#include "mainwindow.h"
 #include "core/corecommandbuilder.h"
 #include "core/coreoutputparser.h"
 #include "utils/utils.h"
@@ -10,7 +9,7 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
-ZjuConnectController::ZjuConnectController(QWidget* parent) : QObject(parent)
+ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
 {
     zjuConnectProcess = new QProcess(this);
 
@@ -21,7 +20,7 @@ ZjuConnectController::ZjuConnectController(QWidget* parent) : QObject(parent)
         logStream = new QTextStream(logFile);
         logStream->setEncoding(QStringConverter::Utf8);
         QString startMsg = "=== Log started at " + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") +
-                           " with " + QApplication::applicationDisplayName() + " " + QApplication::applicationVersion() +
+                           " with " + QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion() +
                            " ===\n";
         *logStream << startMsg;
         logStream->flush();
@@ -138,10 +137,6 @@ ZjuConnectController::ZjuConnectController(QWidget* parent) : QObject(parent)
         emit outputRead(timeString + " 退出原因：" "进程已结束");
         emit finished();
     });
-
-
-    connect(qobject_cast<MainWindow *>(parent), &MainWindow::WriteToProcess, this,
-            [&](const QByteArray &data) { zjuConnectProcess->write(data); });
 }
 
 QString ZjuConnectController::copyCoreForAppImage(const QString &programPath)
@@ -232,7 +227,6 @@ void ZjuConnectController::start(const ConnectionProfile &profile)
         sudoArgs << programToStart << finalArgs;
         programToStart = "sudo";
         finalArgs = sudoArgs;
-        enteredSudoPassword = false;
     }
 #endif
 
@@ -241,6 +235,10 @@ void ZjuConnectController::start(const ConnectionProfile &profile)
     if (zjuConnectProcess->state() == QProcess::NotRunning)
     {
         emit finished();
+    }
+    else
+    {
+        emit started();
     }
 }
 
@@ -260,6 +258,11 @@ void ZjuConnectController::stop()
     {
         zjuConnectProcess->kill();
     }
+}
+
+void ZjuConnectController::writeInput(const QByteArray &data)
+{
+    zjuConnectProcess->write(data);
 }
 
 ZjuConnectController::~ZjuConnectController()
