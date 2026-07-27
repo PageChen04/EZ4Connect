@@ -40,6 +40,29 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     systemProxySession = new SystemProxySession(this);
+    connect(systemProxySession, &SystemProxySession::busyChanged, this,
+            [this](bool busy)
+            {
+                ui->pushButton2->setEnabled(!busy);
+                ui->disableProxyAction->setEnabled(!busy);
+            });
+    connect(systemProxySession, &SystemProxySession::enabledChanged, this,
+            [this](bool enabled)
+            {
+                ui->pushButton2->setText(enabled ? "清除系统代理" : "设置系统代理");
+                if (!enabled && connectionSession != nullptr && !connectionSession->isActive())
+                {
+                    ui->pushButton2->hide();
+                }
+            });
+    connect(systemProxySession, &SystemProxySession::operationFinished, this,
+            [this](bool enabled)
+            {
+                if (enabled && connectionSession != nullptr && !connectionSession->isActive())
+                {
+                    systemProxySession->disable();
+                }
+            });
     setupTrayIcon();
     setupProfileMenu();
 
@@ -101,16 +124,16 @@ MainWindow::MainWindow(QWidget *parent) :
                     return;
                 }
 
-                if (systemProxySession->isEnabled())
-                {
-                    ui->pushButton2->click();
-                }
-                else
-                {
-                    systemProxySession->disable();
-                }
-
-                addLog("已清理系统代理设置");
+                connect(systemProxySession, &SystemProxySession::operationFinished, this,
+                        [this](bool enabled)
+                        {
+                            if (!enabled)
+                            {
+                                addLog("已清理系统代理设置");
+                            }
+                        },
+                        Qt::SingleShotConnection);
+                systemProxySession->disable();
             });
 
     // 文件-清理登录数据
@@ -812,9 +835,9 @@ void MainWindow::cleanUpWhenQuit()
     settings->sync();
 
     // 清除系统代理
-    if (systemProxySession != nullptr && systemProxySession->isEnabled())
+    if (systemProxySession != nullptr)
     {
-        systemProxySession->disable();
+        systemProxySession->clearBeforeShutdown();
     }
 }
 

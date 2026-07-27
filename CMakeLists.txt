@@ -21,6 +21,7 @@ message("PROJ_VER=${PROJ_VER}")
 
 find_package(Qt6 COMPONENTS
     Core
+    Concurrent
     Gui
     Widgets
     Network
@@ -104,6 +105,7 @@ add_subdirectory(singleapplication)
 
 target_link_libraries(${PROJECT_NAME}
         Qt::Core
+        Qt::Concurrent
         Qt::Gui
         Qt::Widgets
         Qt::Network
@@ -156,6 +158,6 @@ if(BUILD_TESTING)
         utils/proxysettings.cpp
     )
     target_include_directories(systemproxysession_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(systemproxysession_test Qt::Core Qt::Network Qt::Widgets ${PLATFORM_LIBS})
+    target_link_libraries(systemproxysession_test Qt::Core Qt::Concurrent Qt::Network Qt::Widgets ${PLATFORM_LIBS})
     add_test(NAME systemproxysession_test COMMAND systemproxysession_test)
 endif()

@@ -283,6 +283,11 @@ void MainWindow::initZjuConnect()
     connect(ui->pushButton2, &QPushButton::clicked,
             [&]()
             {
+                if (systemProxySession->isBusy())
+                {
+                    return;
+                }
+
                 if (!systemProxySession->isEnabled())
                 {
                     int http_port = settings->value("ZJUConnect/HTTPPort").toInt();
@@ -292,44 +297,61 @@ void MainWindow::initZjuConnect()
                         socks_port,
                         settings->value("Common/SystemProxyBypass").toString()
                     };
-                    if (systemProxySession->hasConflict(proxyConfig))
-                    {
-                        bool suppressed = settings->value("Common/SuppressProxyOverrideWarning", false).toBool();
-                        if (suppressed) {
-                            addLog("跳过系统代理覆盖警告，因为已设置了不再提示");
-                        } else {
-                            QMessageBox msgBox(QMessageBox::Warning, "警告",
-                                "当前已存在系统代理配置（可能是 Clash 或其它代理软件）\n是否覆盖当前系统代理配置？",
-                                QMessageBox::Yes | QMessageBox::No, this);
-
-                            QCheckBox *dontShowCheckBox = new QCheckBox("不再提示");
-                            msgBox.setCheckBox(dontShowCheckBox);
-
-                            if (msgBox.exec() == QMessageBox::No)
+                    connect(systemProxySession, &SystemProxySession::conflictCheckFinished, this,
+                            [this, proxyConfig, http_port, socks_port](bool conflict)
                             {
-                                return;
-                            }
+                                if (!connectionSession->isActive())
+                                {
+                                    return;
+                                }
 
-                            if (dontShowCheckBox->isChecked())
-                            {
-                                settings->setValue("Common/SuppressProxyOverrideWarning", true);
-                                settings->sync();
-                            }
-                        }
-                    }
+                                if (conflict)
+                                {
+                                    bool suppressed = settings->value(
+                                        "Common/SuppressProxyOverrideWarning", false
+                                    ).toBool();
+                                    if (suppressed)
+                                    {
+                                        addLog("跳过系统代理覆盖警告，因为已设置了不再提示");
+                                    }
+                                    else
+                                    {
+                                        QMessageBox msgBox(
+                                            QMessageBox::Warning,
+                                            "警告",
+                                            "当前已存在系统代理配置（可能是 Clash 或其它代理软件）\n是否覆盖当前系统代理配置？",
+                                            QMessageBox::Yes | QMessageBox::No,
+                                            this
+                                        );
 
-                    addLog("设置系统代理：HTTP端口 " + QString::number(http_port) + "，SOCKS5 端口 " + QString::number(socks_port));
-                    systemProxySession->enable(proxyConfig);
-                    ui->pushButton2->setText("清除系统代理");
+                                        QCheckBox *dontShowCheckBox = new QCheckBox("不再提示");
+                                        msgBox.setCheckBox(dontShowCheckBox);
+
+                                        if (msgBox.exec() == QMessageBox::No)
+                                        {
+                                            return;
+                                        }
+
+                                        if (dontShowCheckBox->isChecked())
+                                        {
+                                            settings->setValue("Common/SuppressProxyOverrideWarning", true);
+                                            settings->sync();
+                                        }
+                                    }
+                                }
+
+                                addLog(
+                                    "设置系统代理：HTTP端口 " + QString::number(http_port)
+                                    + "，SOCKS5 端口 " + QString::number(socks_port)
+                                );
+                                systemProxySession->enable(proxyConfig);
+                            },
+                            Qt::SingleShotConnection);
+                    systemProxySession->checkConflict(proxyConfig);
                 }
                 else
                 {
                     systemProxySession->disable();
-                    ui->pushButton2->setText("设置系统代理");
-                    if (!connectionSession->isActive())
-                    {
-                        ui->pushButton2->hide();
-                    }
                 }
             });
 
