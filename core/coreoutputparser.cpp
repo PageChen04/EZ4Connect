@@ -72,3 +72,12 @@ CoreOutputEvent CoreOutputParser::parse(const QString &output)
     }
     return CoreOutputEvent::None;
 }
+
+bool CoreOutputParser::hasInteractivePrompt(const QByteArray &output)
+{
+    return output.contains("SUDO_ASK_PASS")
+           || output.contains("Please enter the SMS verification code: ")
+           || output.contains("Please enter your SMS code:")
+           || output.contains("Please enter your TOTP code:")
+           || output.contains("Please enter the callback url:");
+}

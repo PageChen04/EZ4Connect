@@ -26,91 +26,14 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
         logStream->flush();
     }
 
-    auto outputProcess = [&](const QString &output)
-        {
-            emit outputRead(output);
-
-            // 写入日志文件
-            if (logStream != nullptr)
-            {
-                *logStream << output;
-                if (!output.endsWith('\n'))
-                {
-                    *logStream << '\n';
-                }
-                logStream->flush();
-            }
-
-            switch (CoreOutputParser::parse(output))
-            {
-            case CoreOutputEvent::AskSudoPassword:
-                emit askSudoPass();
-                break;
-            case CoreOutputEvent::GraphCaptcha:
-                emit graphCaptcha(graphFile);
-                break;
-            case CoreOutputEvent::SmsCodeWithSkipOption:
-                emit smsCode(true);
-                break;
-            case CoreOutputEvent::SmsCode:
-                emit smsCode(false);
-                break;
-            case CoreOutputEvent::TotpCode:
-                emit totpCode();
-                break;
-            case CoreOutputEvent::SsoCallback:
-                emit ssoAuth();
-                break;
-            case CoreOutputEvent::CaptchaFailed:
-                emit error(ZJU_ERROR::CAPTCHA_FAILED);
-                break;
-            case CoreOutputEvent::AccessDenied:
-                emit error(ZJU_ERROR::ACCESS_DENIED);
-                break;
-            case CoreOutputEvent::ListenFailed:
-                emit error(ZJU_ERROR::LISTEN_FAILED);
-                break;
-            case CoreOutputEvent::InvalidCredentials:
-                emit error(ZJU_ERROR::INVALID_DETAIL);
-                break;
-            case CoreOutputEvent::BruteForceBlocked:
-                emit error(ZJU_ERROR::BRUTE_FORCE);
-                break;
-            case CoreOutputEvent::LoginFailed:
-                emit error(ZJU_ERROR::OTHER_LOGIN_FAILED);
-                break;
-            case CoreOutputEvent::InteractiveError:
-                emit error(ZJU_ERROR::INTERACTIVE_ERROR);
-                break;
-            case CoreOutputEvent::AuthNotAvailable:
-                emit error(ZJU_ERROR::AUTH_NOT_AVAILABLE);
-                break;
-            case CoreOutputEvent::AuthExpired:
-                emit error(ZJU_ERROR::AUTH_EXPIRED);
-                break;
-            case CoreOutputEvent::ClientFailed:
-                emit error(ZJU_ERROR::CLIENT_FAILED);
-                break;
-            case CoreOutputEvent::CorePanic:
-                emit error(ZJU_ERROR::OTHER);
-                break;
-            case CoreOutputEvent::None:
-                break;
-            }
-        };
-
-    connect(zjuConnectProcess, &QProcess::readyReadStandardOutput, this, [&, outputProcess]()
+    connect(zjuConnectProcess, &QProcess::readyReadStandardOutput, this, [this]()
     {
-        QString output = Utils::consoleOutputToQString(zjuConnectProcess->readAllStandardOutput());
-
-		outputProcess(output);
+        processOutput(standardOutputBuffer, zjuConnectProcess->readAllStandardOutput());
     });
 
-    connect(zjuConnectProcess, &QProcess::readyReadStandardError, this, [&, outputProcess]()
+    connect(zjuConnectProcess, &QProcess::readyReadStandardError, this, [this]()
     {
-        QString output = Utils::consoleOutputToQString(zjuConnectProcess->readAllStandardError());
-
-		outputProcess(output);
+        processOutput(standardErrorBuffer, zjuConnectProcess->readAllStandardError());
     });
 
     connect(zjuConnectProcess, &QProcess::errorOccurred, this, [&](QProcess::ProcessError err)
@@ -132,11 +55,112 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
 
     connect(zjuConnectProcess, &QProcess::finished, this, [&]()
     {
+        processOutput(standardOutputBuffer, zjuConnectProcess->readAllStandardOutput(), true);
+        processOutput(standardErrorBuffer, zjuConnectProcess->readAllStandardError(), true);
         stopRequested = false;
         QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
         emit outputRead(timeString + " 退出原因：" "进程已结束");
         emit finished();
     });
+}
+
+void ZjuConnectController::processOutput(CoreOutputBuffer &buffer, const QByteArray &data, bool flushPending)
+{
+    QList<QByteArray> lines = buffer.append(data);
+
+    if (buffer.hasPendingData())
+    {
+        if (flushPending || CoreOutputParser::hasInteractivePrompt(buffer.pendingData()))
+        {
+            lines.append(buffer.takePendingData());
+        }
+    }
+
+    processOutputLines(lines);
+}
+
+void ZjuConnectController::processOutputLines(const QList<QByteArray> &lines)
+{
+    if (lines.isEmpty())
+    {
+        return;
+    }
+
+    QStringList outputLines;
+    outputLines.reserve(lines.size());
+    for (const QByteArray &line : lines)
+    {
+        outputLines.append(Utils::consoleOutputToQString(line));
+    }
+
+    const QString output = outputLines.join('\n');
+    emit outputRead(output);
+
+    if (logStream != nullptr)
+    {
+        *logStream << output << '\n';
+        logStream->flush();
+    }
+
+    for (const QString &line : outputLines)
+    {
+        switch (CoreOutputParser::parse(line))
+        {
+        case CoreOutputEvent::AskSudoPassword:
+            emit askSudoPass();
+            break;
+        case CoreOutputEvent::GraphCaptcha:
+            emit graphCaptcha(graphFile);
+            break;
+        case CoreOutputEvent::SmsCodeWithSkipOption:
+            emit smsCode(true);
+            break;
+        case CoreOutputEvent::SmsCode:
+            emit smsCode(false);
+            break;
+        case CoreOutputEvent::TotpCode:
+            emit totpCode();
+            break;
+        case CoreOutputEvent::SsoCallback:
+            emit ssoAuth();
+            break;
+        case CoreOutputEvent::CaptchaFailed:
+            emit error(ZJU_ERROR::CAPTCHA_FAILED);
+            break;
+        case CoreOutputEvent::AccessDenied:
+            emit error(ZJU_ERROR::ACCESS_DENIED);
+            break;
+        case CoreOutputEvent::ListenFailed:
+            emit error(ZJU_ERROR::LISTEN_FAILED);
+            break;
+        case CoreOutputEvent::InvalidCredentials:
+            emit error(ZJU_ERROR::INVALID_DETAIL);
+            break;
+        case CoreOutputEvent::BruteForceBlocked:
+            emit error(ZJU_ERROR::BRUTE_FORCE);
+            break;
+        case CoreOutputEvent::LoginFailed:
+            emit error(ZJU_ERROR::OTHER_LOGIN_FAILED);
+            break;
+        case CoreOutputEvent::InteractiveError:
+            emit error(ZJU_ERROR::INTERACTIVE_ERROR);
+            break;
+        case CoreOutputEvent::AuthNotAvailable:
+            emit error(ZJU_ERROR::AUTH_NOT_AVAILABLE);
+            break;
+        case CoreOutputEvent::AuthExpired:
+            emit error(ZJU_ERROR::AUTH_EXPIRED);
+            break;
+        case CoreOutputEvent::ClientFailed:
+            emit error(ZJU_ERROR::CLIENT_FAILED);
+            break;
+        case CoreOutputEvent::CorePanic:
+            emit error(ZJU_ERROR::OTHER);
+            break;
+        case CoreOutputEvent::None:
+            break;
+        }
+    }
 }
 
 QString ZjuConnectController::copyCoreForAppImage(const QString &programPath)

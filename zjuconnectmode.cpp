@@ -31,7 +31,7 @@ void MainWindow::initZjuConnect()
     connect(connectionSession, &ConnectionSession::outputRead, this,
         [&](const QString &output)
         {
-            ui->logPlainTextEdit->appendPlainText(output.trimmed());
+            ui->logPlainTextEdit->appendPlainText(output);
         });
 
     connect(connectionSession, &ConnectionSession::savedSudoPasswordRejected, this,
@@ -55,7 +55,7 @@ void MainWindow::initZjuConnect()
             graphCaptchaWindow->setGraph(graphFile);
             graphCaptchaWindow->show();
             connect(graphCaptchaWindow, &GraphCaptchaWindow::finishCaptcha, this, [&](const QByteArray &captcha) {
-                addLog("图形验证码用户输入：" + captcha);
+                addLog("图形验证码已提交");
                 connectionSession->submitInput(captcha + "\n");
             });
         });
@@ -84,13 +84,21 @@ void MainWindow::initZjuConnect()
 
         QString smsCode;
         bool skipSecondaryAuth = false;
-        if (smsCodeDialog.exec() == QDialog::Accepted)
+        const bool smsCodeAccepted = smsCodeDialog.exec() == QDialog::Accepted;
+        if (smsCodeAccepted)
         {
             smsCode = smsCodeLineEdit->text();
             skipSecondaryAuth = showSkipSecondaryAuthOption && skipSecondaryAuthCheckBox->isChecked();
         }
 
-        addLog("短信验证码用户输入：" + smsCode + (skipSecondaryAuth ? " (跳过以后的短信验证)" : ""));
+        if (smsCodeAccepted)
+        {
+            addLog(skipSecondaryAuth ? "短信验证码已提交（跳过以后的短信验证）" : "短信验证码已提交");
+        }
+        else
+        {
+            addLog("短信验证码输入已取消");
+        }
         QByteArray smsCodeInput = smsCode.toLocal8Bit();
         if (skipSecondaryAuth)
         {
@@ -101,8 +109,10 @@ void MainWindow::initZjuConnect()
 
     connect(connectionSession, &ConnectionSession::totpCode, this, [&]() {
         addLog("需要 TOTP 验证码");
-        QString totp = QInputDialog::getText(this, "TOTP 验证码", "请输入 TOTP 验证码：");
-        addLog("TOTP 验证码用户输入：" + totp);
+        bool accepted = false;
+        QString totp = QInputDialog::getText(
+            this, "TOTP 验证码", "请输入 TOTP 验证码：", QLineEdit::Normal, "", &accepted);
+        addLog(accepted ? "TOTP 验证码已提交" : "TOTP 验证码输入已取消");
         connectionSession->submitInput(totp.toLocal8Bit() + "\n");
     });
 

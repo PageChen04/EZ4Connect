@@ -5,6 +5,7 @@
 
 #include "core/connectionerror.h"
 #include "core/connectionprofile.h"
+#include "core/coreoutputbuffer.h"
 
 class ZjuConnectController : public QObject
 {
@@ -44,6 +45,10 @@ signals:
 private:
     QString copyCoreForAppImage(const QString &programPath);
 
+    void processOutput(CoreOutputBuffer &buffer, const QByteArray &data, bool flushPending = false);
+
+    void processOutputLines(const QList<QByteArray> &lines);
+
     QProcess *zjuConnectProcess;
 
     QTemporaryDir *tempDir = nullptr;
@@ -52,6 +57,8 @@ private:
 
     QFile *logFile = nullptr;
     QTextStream *logStream = nullptr;
+    CoreOutputBuffer standardOutputBuffer;
+    CoreOutputBuffer standardErrorBuffer;
     bool stopRequested = false;
 
 };
