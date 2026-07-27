@@ -63,10 +63,35 @@ bool preservesExistingFirstMatchPrecedence()
     }
     return true;
 }
+
+bool recognizesInteractivePromptsBeforeNewline()
+{
+    const QList<QByteArray> prompts{
+        "SUDO_ASK_PASS",
+        "Please enter the SMS verification code: ",
+        "Please enter your SMS code:",
+        "Please enter your TOTP code:",
+        "Please enter the callback url:",
+    };
+    for (const QByteArray &prompt : prompts)
+    {
+        if (!CoreOutputParser::hasInteractivePrompt("prefix " + prompt))
+        {
+            qCritical() << "recognizesInteractivePromptsBeforeNewline failed for" << prompt;
+            return false;
+        }
+    }
+
+    return !CoreOutputParser::hasInteractivePrompt("ordinary partial output");
+}
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    return recognizesCoreProtocol() && preservesExistingFirstMatchPrecedence() ? 0 : 1;
+    return recognizesCoreProtocol()
+               && preservesExistingFirstMatchPrecedence()
+               && recognizesInteractivePromptsBeforeNewline()
+           ? 0
+           : 1;
 }

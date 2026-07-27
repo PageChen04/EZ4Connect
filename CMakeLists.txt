@@ -39,6 +39,7 @@ set(SOURCE_FILES
     application/connectionsession.cpp
     application/systemproxysession.cpp
     core/corecommandbuilder.cpp
+    core/coreoutputbuffer.cpp
     core/coreoutputparser.cpp
     core/connectionsessionstate.cpp
     infrastructure/settingsprofileloader.cpp
@@ -134,6 +135,14 @@ if(BUILD_TESTING)
     target_include_directories(coreoutputparser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(coreoutputparser_test Qt::Core)
     add_test(NAME coreoutputparser_test COMMAND coreoutputparser_test)
+
+    add_executable(coreoutputbuffer_test
+        tests/coreoutputbuffer_test.cpp
+        core/coreoutputbuffer.cpp
+    )
+    target_include_directories(coreoutputbuffer_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(coreoutputbuffer_test Qt::Core)
+    add_test(NAME coreoutputbuffer_test COMMAND coreoutputbuffer_test)
 
     add_executable(settingsprofileloader_test
         tests/settingsprofileloader_test.cpp
