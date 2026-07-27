@@ -19,14 +19,14 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
     {
         logStream = new QTextStream(logFile);
         logStream->setEncoding(QStringConverter::Utf8);
-        QString startMsg = "=== Log started at " + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") +
+        QString startMsg = "=== Log started at " + QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss") +
                            " with " + QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion() +
                            " ===\n";
         *logStream << startMsg;
         logStream->flush();
     }
 
-    auto outputProcess = [&](const QString& output)
+    auto outputProcess = [&](const QString &output)
         {
             emit outputRead(output);
 
@@ -119,7 +119,7 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
         {
             return;
         }
-        QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
         QString errorString = zjuConnectProcess->errorString();
         emit outputRead(timeString + " 退出原因：" + errorString);
 
@@ -133,7 +133,7 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
     connect(zjuConnectProcess, &QProcess::finished, this, [&]()
     {
         stopRequested = false;
-        QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
         emit outputRead(timeString + " 退出原因：" "进程已结束");
         emit finished();
     });
@@ -201,7 +201,7 @@ void ZjuConnectController::start(const ConnectionProfile &profile)
     }
 
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
-    QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
     emit outputRead(timeString + " VPN 启动！参数：" + command.loggableArguments.join(' '));
 
     if (!profile.credentials.totpSecret.isEmpty())
@@ -272,7 +272,7 @@ ZjuConnectController::~ZjuConnectController()
     // 关闭日志文件
     if (logStream != nullptr)
     {
-        QString endMsg = "=== Log ended at " + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + " ===\n";
+        QString endMsg = "=== Log ended at " + QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss") + " ===\n";
         *logStream << endMsg;
         logStream->flush();
         delete logStream;
