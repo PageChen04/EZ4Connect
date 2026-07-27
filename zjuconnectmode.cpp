@@ -11,6 +11,7 @@
 #include "ui_mainwindow.h"
 #include "sudowindow/sudowindow.h"
 #include "loginwindow/loginwindow.h"
+#include "infrastructure/settingsprofileloader.h"
 #include "utils/utils.h"
 #include "zjuconnectcontroller/zjuconnectcontroller.h"
 
@@ -280,9 +281,6 @@ void MainWindow::initZjuConnect()
 #endif
 
                     auto startZjuConnect = [this](const QString &username, const QString &password) {
-                        QString program_path = Utils::getCorePath();
-						QString bind_prefix = settings->value("ZJUConnect/OutsideAccess", false).toBool() ? "[::]:" : "127.0.0.1:";
-
                         isZjuConnectLinked = true;
                         zjuConnectError = ZJU_ERROR::NONE;
                         ui->pushButton1->setText("断开服务器");
@@ -295,50 +293,10 @@ void MainWindow::initZjuConnect()
                         }
                         isAutoReconnecting = false;
 
-                        QString countryCode = settings->value("ZJUConnect/PhoneCountryCode").toString();
-                        QString phoneNumber = settings->value("ZJUConnect/PhoneNumber").toString();
-                        QString phone = !countryCode.isEmpty() && !phoneNumber.isEmpty() ? (countryCode + "-" + phoneNumber) : "";
-
-                        zjuConnectController->start(
-                            program_path, settings->value("ZJUConnect/Protocol").toString(),
-                            settings->value("ZJUConnect/AuthType").toString(),
-                            settings->value("ZJUConnect/LoginDomain").toString(), username, password, phone,
-                            settings->value("Credential/TOTPSecret").toString(),
-                            settings->value("ZJUConnect/ServerAddress").toString(),
-                            settings->value("ZJUConnect/ServerPort").toInt(),
-                            settings->value("ZJUConnect/DNS").toString(),
-                            settings->value("ZJUConnect/DNSAuto").toBool(),
-                            settings->value("ZJUConnect/SecondaryDNS").toString(),
-                            settings->value("ZJUConnect/DNSTTL").toInt(),
-                            bind_prefix + QString::number(settings->value("ZJUConnect/SOCKS5Port").toInt()),
-                            bind_prefix + QString::number(settings->value("ZJUConnect/HTTPPort").toInt()),
-                            settings->value("ZJUConnect/ShadowsocksURL").toString(),
-                            settings->value("ZJUConnect/DialDirectProxy").toString(),
-                            settings->value("ZJUConnect/UpdateBestNodesInterval", 300).toInt(),
-                            !settings->value("ZJUConnect/MultiLine").toBool(),
-                            !settings->value("ZJUConnect/KeepAlive").toBool(),
-                            settings->value("ZJUConnect/KeepAliveURL", "").toString(),
-                            settings->value("ZJUConnect/BindInterface", "").toString(),
-                            settings->value("ZJUConnect/AutoDetectInterface", false).toBool(),
-                            settings->value("ZJUConnect/SkipDomainResource").toBool(),
-                            settings->value("ZJUConnect/DisableServerConfig").toBool(),
-                            settings->value("ZJUConnect/ProxyAll").toBool(),
-                            settings->value("ZJUConnect/DisableZJUDNS").toBool(),
-                            !settings->value("ZJUConnect/ZJUDefault").toBool(),
-                            settings->value("ZJUConnect/Debug").toBool(),
-                            settings->value("ZJUConnect/TUNMode").toBool(),
-                            settings->value("ZJUConnect/AddRoute").toBool(),
-                            settings->value("ZJUConnect/DNSHijack").toBool(),
-                            settings->value("ZJUConnect/FakeIP").toBool(),
-                            settings->value("ZJUConnect/TCPTunnelMode").toBool(),
-                            settings->value("ZJUConnect/TCPPortForwarding").toString(),
-                            settings->value("ZJUConnect/UDPPortForwarding").toString(),
-                            settings->value("ZJUConnect/CustomDNS", "").toString(),
-                            settings->value("ZJUConnect/CustomProxyDomain", "").toString(),
-                            settings->value("Credential/CertFile", "").toString(),
-                            QByteArray::fromBase64(settings->value("Credential/CertPassword", "").toString().toUtf8()),
-                            settings->value("ZJUConnect/ExtraArguments", "").toString(),
-                            currentProfileId);
+                        ConnectionProfile profile =
+                            SettingsProfileLoader::load(*settings, currentProfileId, username, password);
+                        profile.program = Utils::getCorePath();
+                        zjuConnectController->start(profile);
                 	};
 
                     if (((protocol == "atrust" && authtype == "psw") ||
