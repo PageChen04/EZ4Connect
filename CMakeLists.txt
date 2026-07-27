@@ -36,6 +36,7 @@ set(SOURCE_FILES
     mainwindow.cpp
     zjuconnectmode.cpp
     core/corecommandbuilder.cpp
+    core/coreoutputparser.cpp
     zjuconnectcontroller/zjuconnectcontroller.cpp
     extrasettingwindow/extrasettingwindow.cpp
     settingwindow/settingwindow.cpp
@@ -118,4 +119,12 @@ if(BUILD_TESTING)
     target_include_directories(corecommandbuilder_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(corecommandbuilder_test Qt::Core)
     add_test(NAME corecommandbuilder_test COMMAND corecommandbuilder_test)
+
+    add_executable(coreoutputparser_test
+        tests/coreoutputparser_test.cpp
+        core/coreoutputparser.cpp
+    )
+    target_include_directories(coreoutputparser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(coreoutputparser_test Qt::Core)
+    add_test(NAME coreoutputparser_test COMMAND coreoutputparser_test)
 endif()

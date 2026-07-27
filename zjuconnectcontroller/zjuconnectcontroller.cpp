@@ -1,6 +1,7 @@
 #include "zjuconnectcontroller.h"
 #include "mainwindow.h"
 #include "core/corecommandbuilder.h"
+#include "core/coreoutputparser.h"
 #include "utils/utils.h"
 #include <qcontainerfwd.h>
 #include <QCoreApplication>
@@ -41,73 +42,61 @@ ZjuConnectController::ZjuConnectController(QWidget* parent) : QObject(parent)
                 logStream->flush();
             }
 
-            if (output.contains("SUDO_ASK_PASS"))
+            switch (CoreOutputParser::parse(output))
             {
+            case CoreOutputEvent::AskSudoPassword:
                 emit askSudoPass();
-            }
-            else if (output.contains("Graph check code saved to "))
-            {
+                break;
+            case CoreOutputEvent::GraphCaptcha:
                 emit graphCaptcha(graphFile);
-            }
-            else if (output.contains("Please enter the SMS verification code: "))
-            {
+                break;
+            case CoreOutputEvent::SmsCodeWithSkipOption:
                 emit smsCode(true);
-            }
-            else if (output.contains("Please enter your SMS code:"))
-            {
+                break;
+            case CoreOutputEvent::SmsCode:
                 emit smsCode(false);
-            }
-            else if (output.contains("Please enter your TOTP code:"))
-            {
+                break;
+            case CoreOutputEvent::TotpCode:
                 emit totpCode();
-            }
-            else if (output.contains("Please enter the callback url:"))
-            {
+                break;
+            case CoreOutputEvent::SsoCallback:
                 emit ssoAuth();
-            }
-            else if (output.contains("graph check code still required after second login attempt"))
-            {
+                break;
+            case CoreOutputEvent::CaptchaFailed:
                 emit error(ZJU_ERROR::CAPTCHA_FAILED);
-            }
-            else if (output.contains("Access is denied."))
-            {
+                break;
+            case CoreOutputEvent::AccessDenied:
                 emit error(ZJU_ERROR::ACCESS_DENIED);
-            }
-            else if (output.contains("listen failed"))
-            {
+                break;
+            case CoreOutputEvent::ListenFailed:
                 emit error(ZJU_ERROR::LISTEN_FAILED);
-            }
-            else if (output.contains("Invalid username or password!") || output.contains("ticket is empty"))
-            {
+                break;
+            case CoreOutputEvent::InvalidCredentials:
                 emit error(ZJU_ERROR::INVALID_DETAIL);
-            }
-            else if (output.contains("You are trying brute-force login on this IP address."))
-            {
+                break;
+            case CoreOutputEvent::BruteForceBlocked:
                 emit error(ZJU_ERROR::BRUTE_FORCE);
-            }
-            else if (output.contains("Login failed") || output.contains("too many login failures"))
-            {
+                break;
+            case CoreOutputEvent::LoginFailed:
                 emit error(ZJU_ERROR::OTHER_LOGIN_FAILED);
-            }
-            else if (output.contains("unexpected newline"))
-            {
+                break;
+            case CoreOutputEvent::InteractiveError:
                 emit error(ZJU_ERROR::INTERACTIVE_ERROR);
-            }
-            else if (output.contains("auth type/login domain combination not found"))
-            {
+                break;
+            case CoreOutputEvent::AuthNotAvailable:
                 emit error(ZJU_ERROR::AUTH_NOT_AVAILABLE);
-            }
-            else if (output.contains("invalid SID") || output.contains("l3-tunnel tunnel auth failed:"))
-            {
+                break;
+            case CoreOutputEvent::AuthExpired:
                 emit error(ZJU_ERROR::AUTH_EXPIRED);
-            }
-            else if (output.contains("client setup error"))
-            {
+                break;
+            case CoreOutputEvent::ClientFailed:
                 emit error(ZJU_ERROR::CLIENT_FAILED);
-            }
-            else if (output.contains("panic"))
-            {
+                break;
+            case CoreOutputEvent::CorePanic:
                 emit error(ZJU_ERROR::OTHER);
+                break;
+            case CoreOutputEvent::None:
+                break;
             }
         };
 
