@@ -37,9 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
     upgradeSettings();
 
     isFirstTimeSetMode = true;
-    isSystemProxySet = false;
 
     ui->setupUi(this);
+    systemProxySession = new SystemProxySession(this);
     setupTrayIcon();
     setupProfileMenu();
 
@@ -101,13 +101,13 @@ MainWindow::MainWindow(QWidget *parent) :
                     return;
                 }
 
-                if (isSystemProxySet)
+                if (systemProxySession->isEnabled())
                 {
                     ui->pushButton2->click();
                 }
                 else
                 {
-                    Utils::clearSystemProxy();
+                    systemProxySession->disable();
                 }
 
                 addLog("已清理系统代理设置");
@@ -812,9 +812,9 @@ void MainWindow::cleanUpWhenQuit()
     settings->sync();
 
     // 清除系统代理
-    if (isSystemProxySet)
+    if (systemProxySession != nullptr && systemProxySession->isEnabled())
     {
-        Utils::clearSystemProxy();
+        systemProxySession->disable();
     }
 }
 

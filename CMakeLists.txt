@@ -36,10 +36,12 @@ set(SOURCE_FILES
     mainwindow.cpp
     zjuconnectmode.cpp
     application/connectionsession.cpp
+    application/systemproxysession.cpp
     core/corecommandbuilder.cpp
     core/coreoutputparser.cpp
     core/connectionsessionstate.cpp
     infrastructure/settingsprofileloader.cpp
+    infrastructure/platformsystemproxybackend.cpp
     zjuconnectcontroller/zjuconnectcontroller.cpp
     extrasettingwindow/extrasettingwindow.cpp
     settingwindow/settingwindow.cpp
@@ -146,4 +148,14 @@ if(BUILD_TESTING)
     target_include_directories(connectionsessionstate_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(connectionsessionstate_test Qt::Core)
     add_test(NAME connectionsessionstate_test COMMAND connectionsessionstate_test)
+
+    add_executable(systemproxysession_test
+        tests/systemproxysession_test.cpp
+        application/systemproxysession.cpp
+        infrastructure/platformsystemproxybackend.cpp
+        utils/proxysettings.cpp
+    )
+    target_include_directories(systemproxysession_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(systemproxysession_test Qt::Core Qt::Network Qt::Widgets ${PLATFORM_LIBS})
+    add_test(NAME systemproxysession_test COMMAND systemproxysession_test)
 endif()

@@ -144,7 +144,7 @@ void MainWindow::initZjuConnect()
         }
         ui->pushButton1->setText("连接服务器");
         trayConnectAction->setText("连接服务器");
-        if (isSystemProxySet)
+        if (systemProxySession->isEnabled())
         {
             ui->pushButton2->click();
         }
@@ -283,11 +283,16 @@ void MainWindow::initZjuConnect()
     connect(ui->pushButton2, &QPushButton::clicked,
             [&]()
             {
-                if (!isSystemProxySet)
+                if (!systemProxySession->isEnabled())
                 {
                     int http_port = settings->value("ZJUConnect/HTTPPort").toInt();
                     int socks_port = settings->value("ZJUConnect/SOCKS5Port").toInt();
-                    if (Utils::isSystemProxySet(http_port, socks_port))
+                    const SystemProxyConfig proxyConfig{
+                        http_port,
+                        socks_port,
+                        settings->value("Common/SystemProxyBypass").toString()
+                    };
+                    if (systemProxySession->hasConflict(proxyConfig))
                     {
                         bool suppressed = settings->value("Common/SuppressProxyOverrideWarning", false).toBool();
                         if (suppressed) {
@@ -314,17 +319,13 @@ void MainWindow::initZjuConnect()
                     }
 
                     addLog("设置系统代理：HTTP端口 " + QString::number(http_port) + "，SOCKS5 端口 " + QString::number(socks_port));
-                    Utils::setSystemProxy(settings->value("ZJUConnect/HTTPPort").toInt(),
-                                          settings->value("ZJUConnect/SOCKS5Port").toInt(),
-                                          settings->value("Common/SystemProxyBypass").toString());
+                    systemProxySession->enable(proxyConfig);
                     ui->pushButton2->setText("清除系统代理");
-                    isSystemProxySet = true;
                 }
                 else
                 {
-                    Utils::clearSystemProxy();
+                    systemProxySession->disable();
                     ui->pushButton2->setText("设置系统代理");
-                    isSystemProxySet = false;
                     if (!connectionSession->isActive())
                     {
                         ui->pushButton2->hide();

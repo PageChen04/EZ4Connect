@@ -10,6 +10,7 @@
 #include <QPointer>
 
 #include "application/connectionsession.h"
+#include "application/systemproxysession.h"
 #include "loginwindow/loginwindow.h"
 #include "sudowindow/sudowindow.h"
 #include "ssologinwebview/ssologinwebview.h"
@@ -98,6 +99,7 @@ private:
     QAction *renameProfileAction;
     QAction *deleteProfileAction;
     ConnectionSession *connectionSession = nullptr;
+    SystemProxySession *systemProxySession = nullptr;
     QNetworkAccessManager *checkUpdateNAM;
     QNetworkAccessManager *checkCoreUpdateNAM;
     QSettings *settings;
@@ -114,7 +116,6 @@ private:
 
     bool isFirstTimeSetMode;
 
-    bool isSystemProxySet;
 };
 
 #endif //MAINWINDOW_H
