@@ -188,69 +188,11 @@ QString ZjuConnectController::copyCoreForAppImage(const QString &programPath)
 #endif
 }
 
-void ZjuConnectController::start(
-    const QString& program,
-    const QString& protocol,
-    const QString& authType,
-    const QString& loginDomain,
-    const QString& username,
-    const QString& password,
-    const QString& phone,
-    const QString& totpSecret,
-    const QString& server,
-    int port,
-    const QString& dns,
-    bool dnsAuto,
-    const QString& secondaryDns,
-    int dnsTtl,
-    const QString& socksBind,
-    const QString& httpBind,
-    const QString& shadowsocksUrl,
-    const QString& dialDirectProxy,
-    int updateBestNodesInterval,
-    bool disableMultiLine,
-    bool disableKeepAlive,
-    const QString& keepAliveUrl,
-    const QString& bindInterface,
-    bool autoDetectInterface,
-    bool skipDomainResource,
-    bool disableServerConfig,
-    bool proxyAll,
-    bool disableZjuDns,
-    bool disableZjuConfig,
-    bool debugDump,
-    bool tunMode,
-    bool addRoute,
-    bool dnsHijack,
-    bool fakeIp,
-    bool tcpTunnelMode,
-    const QString& tcpPortForwarding,
-    const QString& udpPortForwarding,
-    const QString& customDNS,
-    const QString& customProxyDomain,
-    const QString& certFile,
-    const QString& certPassword,
-    const QString& extraArguments,
-    const QString& profileId
-)
+void ZjuConnectController::start(const ConnectionProfile &profile)
 {
-    ConnectionProfile profile;
-    profile.program = program;
-    profile.profileId = profileId;
-    profile.credentials = {username, password, totpSecret, certFile, certPassword};
-    profile.endpoint = {protocol, authType, loginDomain, phone, server, port};
-    profile.dns = {dns, dnsAuto, secondaryDns, dnsTtl, disableZjuDns, customDNS};
-    profile.proxy = {socksBind, httpBind, shadowsocksUrl, dialDirectProxy, proxyAll, customProxyDomain};
-    profile.tunnel = {tunMode, addRoute, dnsHijack, fakeIp, tcpTunnelMode,
-                      tcpPortForwarding, udpPortForwarding};
-    profile.behavior = {updateBestNodesInterval, disableMultiLine, disableKeepAlive,
-                        keepAliveUrl, bindInterface, autoDetectInterface, skipDomainResource,
-                        disableServerConfig, disableZjuConfig, debugDump};
-    profile.extraArguments = extraArguments;
-
     CoreRuntimePaths runtimePaths;
 
-    if (protocol == "atrust")
+    if (profile.endpoint.protocol == "atrust")
     {
         // 图形验证码文件路径
         if (tempDir == nullptr)
@@ -260,27 +202,27 @@ void ZjuConnectController::start(
         }
         graphFile = tempDir->filePath("graph.jpg");
         runtimePaths.graphCodeFile = graphFile;
-        runtimePaths.clientDataFile = Utils::getClientDataPath(profileId);
+        runtimePaths.clientDataFile = Utils::getClientDataPath(profile.profileId);
     }
 
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
     emit outputRead(timeString + " VPN 启动！参数：" + command.loggableArguments.join(' '));
 
-    if (!totpSecret.isEmpty())
+    if (!profile.credentials.totpSecret.isEmpty())
     {
         emit outputRead(timeString + " 使用了 TOTP");
     }
-    if (!certFile.isEmpty())
+    if (!profile.credentials.certFile.isEmpty())
     {
         emit outputRead(timeString + " 使用了证书文件");
     }
 
-    QString programToStart = program;
+    QString programToStart = profile.program;
     QStringList finalArgs = command.arguments;
 
 #if defined(Q_OS_UNIX)
-    if (tunMode && !Utils::isRunningAsAdmin())
+    if (profile.tunnel.tunMode && !Utils::isRunningAsAdmin())
     {
         programToStart = copyCoreForAppImage(programToStart);
 

@@ -3,6 +3,8 @@
 
 #include <QtCore>
 
+#include "core/connectionprofile.h"
+
 enum class ZJU_ERROR
 {
     NONE,
@@ -29,51 +31,7 @@ public:
 
     ~ZjuConnectController() override;
 
-    void start(
-        const QString& program,
-        const QString& protocol,
-        const QString& authType,
-        const QString& loginDomain,
-        const QString& username,
-        const QString& password,
-        const QString& phone,
-        const QString& totpSecret,
-        const QString& server,
-        int port,
-        const QString& dns,
-        bool dnsAuto,
-        const QString& secondaryDns,
-        int dnsTtl,
-        const QString& socksBind,
-        const QString& httpBind,
-        const QString& shadowsocksUrl,
-        const QString& dialDirectProxy,
-        int updateBestNodesInterval,
-        bool disableMultiLine,
-        bool disableKeepAlive,
-        const QString& keepAliveUrl,
-        const QString& bindInterface,
-        bool autoDetectInterface,
-        bool skipDomainResource,
-        bool disableServerConfig,
-        bool proxyAll,
-        bool disableZjuDns,
-        bool disableZjuConfig,
-        bool debugDump,
-        bool tunMode,
-        bool addRoute,
-        bool dnsHijack,
-        bool fakeIp,
-        bool tcpTunnelMode,
-        const QString& tcpPortForwarding,
-        const QString& udpPortForwarding,
-        const QString& customDNS,
-        const QString& customProxyDomain,
-        const QString& certFile,
-        const QString& certPassword,
-        const QString& extraArguments,
-        const QString& profileId
-    );
+    void start(const ConnectionProfile &profile);
 
     void stop();
 
