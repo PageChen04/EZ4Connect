@@ -406,7 +406,7 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::addLog(const QString &log)
 {
-    QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
     ui->logPlainTextEdit->appendPlainText(timeString + " " + log.trimmed());
 }
 
