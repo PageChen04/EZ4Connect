@@ -3,28 +3,14 @@
 #include "core/coreoutputparser.h"
 #include "utils/utils.h"
 #include <qcontainerfwd.h>
-#include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QStandardPaths>
 
 ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
 {
     zjuConnectProcess = new QProcess(this);
-
-    // 初始化日志文件
-    logFile = new QFile(Utils::getLogFilePath());
-    if (logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
-    {
-        logStream = new QTextStream(logFile);
-        logStream->setEncoding(QStringConverter::Utf8);
-        QString startMsg = "=== Log started at " + QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss") +
-                           " with " + QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion() +
-                           " ===\n";
-        *logStream << startMsg;
-        logStream->flush();
-    }
 
     connect(zjuConnectProcess, &QProcess::readyReadStandardOutput, this, [this]()
     {
@@ -42,13 +28,12 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
         {
             return;
         }
-        QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
         QString errorString = zjuConnectProcess->errorString();
-        emit outputRead(timeString + " 退出原因：" + errorString);
+        qWarning().noquote() << "退出原因：" + errorString;
 
         if (errorString.contains("No such file or directory") || errorString.contains("not found") || errorString.contains("找不到"))
         {
-            emit outputRead(timeString + " 核心路径：" + zjuConnectProcess->program());
+            qWarning().noquote() << "核心路径：" + zjuConnectProcess->program();
             emit error(ZJU_ERROR::PROGRAM_NOT_FOUND);
         }
     });
@@ -58,8 +43,7 @@ ZjuConnectController::ZjuConnectController(QObject *parent) : QObject(parent)
         processOutput(standardOutputBuffer, zjuConnectProcess->readAllStandardOutput(), true);
         processOutput(standardErrorBuffer, zjuConnectProcess->readAllStandardError(), true);
         stopRequested = false;
-        QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-        emit outputRead(timeString + " 退出原因：" "进程已结束");
+        qInfo().noquote() << "退出原因：进程已结束";
         emit finished();
     });
 }
@@ -95,12 +79,6 @@ void ZjuConnectController::processOutputLines(const QList<QByteArray> &lines)
 
     const QString output = outputLines.join('\n');
     emit outputRead(output);
-
-    if (logStream != nullptr)
-    {
-        *logStream << output << '\n';
-        logStream->flush();
-    }
 
     for (const QString &line : outputLines)
     {
@@ -225,16 +203,15 @@ void ZjuConnectController::start(const ConnectionProfile &profile)
     }
 
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
-    QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-    emit outputRead(timeString + " VPN 启动！参数：" + command.loggableArguments.join(' '));
+    qInfo().noquote() << "VPN 启动！参数：" + command.loggableArguments.join(' ');
 
     if (!profile.credentials.totpSecret.isEmpty())
     {
-        emit outputRead(timeString + " 使用了 TOTP");
+        qInfo().noquote() << "使用了 TOTP";
     }
     if (!profile.credentials.certFile.isEmpty())
     {
-        emit outputRead(timeString + " 使用了证书文件");
+        qInfo().noquote() << "使用了证书文件";
     }
 
     QString programToStart = profile.program;
@@ -292,24 +269,4 @@ void ZjuConnectController::writeInput(const QByteArray &data)
 ZjuConnectController::~ZjuConnectController()
 {
     stop();
-
-    // 关闭日志文件
-    if (logStream != nullptr)
-    {
-        QString endMsg = "=== Log ended at " + QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss") + " ===\n";
-        *logStream << endMsg;
-        logStream->flush();
-        delete logStream;
-        logStream = nullptr;
-    }
-
-    if (logFile != nullptr)
-    {
-        if (logFile->isOpen())
-        {
-            logFile->close();
-        }
-        delete logFile;
-        logFile = nullptr;
-    }
 }

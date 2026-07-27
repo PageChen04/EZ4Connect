@@ -55,8 +55,6 @@ private:
 
     QString graphFile;
 
-    QFile *logFile = nullptr;
-    QTextStream *logStream = nullptr;
     CoreOutputBuffer standardOutputBuffer;
     CoreOutputBuffer standardErrorBuffer;
     bool stopRequested = false;

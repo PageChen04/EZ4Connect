@@ -1,8 +1,11 @@
 #include "authinfowindow.h"
 
 #include "utils/utils.h"
-#include "mainwindow.h"
 
+#include <QDebug>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QKeyEvent>
@@ -34,14 +37,13 @@ AuthInfoWindow::AuthInfoWindow(QWidget *parent)
     connect(proc_, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
             [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 QString output = Utils::consoleOutputToQString(stdoutBuf_);
-                if (mainWindow)
-                    mainWindow->addLog("可用认证方式：\n" + output);
+                qInfo().noquote() << "可用认证方式：\n" + output;
                 QJsonParseError jsonError;
                 QJsonDocument doc = QJsonDocument::fromJson(output.toUtf8(), &jsonError);
-                if (jsonError.error != QJsonParseError::NoError && mainWindow)
-                    mainWindow->addLog("解析可用认证方式失败：" + jsonError.errorString());
-                if (!doc.isArray() && mainWindow)
-                    mainWindow->addLog("解析可用认证方式失败：可用认证方式不是列表");
+                if (jsonError.error != QJsonParseError::NoError)
+                    qWarning().noquote() << "解析可用认证方式失败：" + jsonError.errorString();
+                if (!doc.isArray())
+                    qWarning().noquote() << "解析可用认证方式失败：可用认证方式不是列表";
                 QJsonArray arr = doc.array();
                 for (QJsonValueRef v : arr) {
                     QJsonObject obj = v.toObject();
@@ -58,12 +60,10 @@ AuthInfoWindow::AuthInfoWindow(QWidget *parent)
                 }
             });
     connect(proc_, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        mainWindow->addLog(QString("获取可用认证方式失败：") + QMetaEnum::fromType<QProcess::ProcessError>().valueToKey(error));
+        qWarning().noquote()
+            << QString("获取可用认证方式失败：")
+                   + QMetaEnum::fromType<QProcess::ProcessError>().valueToKey(error);
     });
-
-    mainWindow = qobject_cast<MainWindow *>(parent);
-    if (!mainWindow)
-        mainWindow = qobject_cast<MainWindow *>(parent->parent());
 }
 
 AuthInfoWindow::~AuthInfoWindow()
@@ -77,8 +77,5 @@ void AuthInfoWindow::fetchAuthInfo(const QString& serverAddress, int port)
     stderrBuf_.clear();
     proc_->start(Utils::getCorePath(),
                  {"-protocol", "atrust", "-server", serverAddress, "-port", QString::number(port), "-auth-info"});
-    if (mainWindow)
-    {
-        mainWindow->addLog("正在获取可用认证的方式...");
-    }
+    qInfo().noquote() << "正在获取可用认证的方式...";
 }

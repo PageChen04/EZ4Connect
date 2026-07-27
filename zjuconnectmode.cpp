@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QDialogButtonBox>
+#include <QDebug>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -8,6 +9,8 @@
 #include <QApplication>
 
 #include "mainwindow.h"
+#include "application/applicationlogger.h"
+#include "infrastructure/corelogfile.h"
 #include "ui_mainwindow.h"
 #include "sudowindow/sudowindow.h"
 #include "loginwindow/loginwindow.h"
@@ -28,14 +31,13 @@ void MainWindow::initZjuConnect()
     resetZjuConnectUi();
 
     // 连接服务器
-    connect(connectionSession, &ConnectionSession::outputRead, this,
-        [&](const QString &output)
-        {
-            ui->logPlainTextEdit->appendPlainText(output);
-        });
+    connect(connectionSession, &ConnectionSession::outputRead,
+            applicationLogger, &ApplicationLogger::appendCoreOutput);
+    connect(connectionSession, &ConnectionSession::outputRead,
+            coreLogFile, &CoreLogFile::appendOutput);
 
     connect(connectionSession, &ConnectionSession::savedSudoPasswordRejected, this,
-            [&]() { addLog("sudo 密码可能有误，不使用记住的密码"); });
+            [&]() { qWarning().noquote() << "sudo 密码可能有误，不使用记住的密码"; });
 
     connect(connectionSession, &ConnectionSession::askSudoPass, this,
         [&]()
@@ -50,18 +52,18 @@ void MainWindow::initZjuConnect()
 
     connect(connectionSession, &ConnectionSession::graphCaptcha, this,
         [&](const QString &graphFile) {
-            addLog("需要图形验证码");
+            qInfo().noquote() << "需要图形验证码";
             graphCaptchaWindow = new GraphCaptchaWindow(this);
             graphCaptchaWindow->setGraph(graphFile);
             graphCaptchaWindow->show();
             connect(graphCaptchaWindow, &GraphCaptchaWindow::finishCaptcha, this, [&](const QByteArray &captcha) {
-                addLog("图形验证码已提交");
+                qInfo().noquote() << "图形验证码已提交";
                 connectionSession->submitInput(captcha + "\n");
             });
         });
 
     connect(connectionSession, &ConnectionSession::smsCode, this, [&](bool showSkipSecondaryAuthOption) {
-        addLog("需要短信验证码");
+        qInfo().noquote() << "需要短信验证码";
 
         QDialog smsCodeDialog(this);
         smsCodeDialog.setWindowTitle("短信验证码");
@@ -93,11 +95,12 @@ void MainWindow::initZjuConnect()
 
         if (smsCodeAccepted)
         {
-            addLog(skipSecondaryAuth ? "短信验证码已提交（跳过以后的短信验证）" : "短信验证码已提交");
+            qInfo().noquote()
+                << (skipSecondaryAuth ? "短信验证码已提交（跳过以后的短信验证）" : "短信验证码已提交");
         }
         else
         {
-            addLog("短信验证码输入已取消");
+            qInfo().noquote() << "短信验证码输入已取消";
         }
         QByteArray smsCodeInput = smsCode.toLocal8Bit();
         if (skipSecondaryAuth)
@@ -108,11 +111,11 @@ void MainWindow::initZjuConnect()
     });
 
     connect(connectionSession, &ConnectionSession::totpCode, this, [&]() {
-        addLog("需要 TOTP 验证码");
+        qInfo().noquote() << "需要 TOTP 验证码";
         bool accepted = false;
         QString totp = QInputDialog::getText(
             this, "TOTP 验证码", "请输入 TOTP 验证码：", QLineEdit::Normal, "", &accepted);
-        addLog(accepted ? "TOTP 验证码已提交" : "TOTP 验证码输入已取消");
+        qInfo().noquote() << (accepted ? "TOTP 验证码已提交" : "TOTP 验证码输入已取消");
         connectionSession->submitInput(totp.toLocal8Bit() + "\n");
     });
 
@@ -134,7 +137,7 @@ void MainWindow::initZjuConnect()
         if (ssoUrl.startsWith("/"))
             ssoUrl = "https://" + serverHost + ssoUrl;
 
-        addLog(QStringLiteral("单点登录：") + ssoUrl);
+        qInfo().noquote() << QStringLiteral("单点登录：") + ssoUrl;
         ssoLoginWebView->setInitialUrl(QUrl::fromUserInput(ssoUrl));
         ssoLoginWebView->setCallbackServerHost(serverHost);
         ssoLoginWebView->show();
@@ -142,12 +145,12 @@ void MainWindow::initZjuConnect()
 
     connect(connectionSession, &ConnectionSession::reconnectScheduled, this, [&](int)
     {
-        addLog("正在尝试重新连接...");
+        qInfo().noquote() << "正在尝试重新连接...";
     });
 
     connect(connectionSession, &ConnectionSession::finished, this, [&](ZJU_ERROR error)
     {
-        addLog("VPN 断开！");
+        qInfo().noquote() << "VPN 断开！";
         if (error != ZJU_ERROR::NONE)
         {
             showNotification("VPN", "VPN 意外断开！", QSystemTrayIcon::MessageIcon::Warning);
@@ -322,7 +325,7 @@ void MainWindow::initZjuConnect()
                                     ).toBool();
                                     if (suppressed)
                                     {
-                                        addLog("跳过系统代理覆盖警告，因为已设置了不再提示");
+                                        qInfo().noquote() << "跳过系统代理覆盖警告，因为已设置了不再提示";
                                     }
                                     else
                                     {
@@ -350,10 +353,9 @@ void MainWindow::initZjuConnect()
                                     }
                                 }
 
-                                addLog(
-                                    "设置系统代理：HTTP端口 " + QString::number(http_port)
-                                    + "，SOCKS5 端口 " + QString::number(socks_port)
-                                );
+                                qInfo().noquote()
+                                    << "设置系统代理：HTTP端口 " + QString::number(http_port)
+                                           + "，SOCKS5 端口 " + QString::number(socks_port);
                                 systemProxySession->enable(proxyConfig);
                             },
                             Qt::SingleShotConnection);

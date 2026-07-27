@@ -24,16 +24,17 @@ namespace Ui
     class MainWindow;
 }
 
+class ApplicationLogger;
+class CoreLogFile;
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(ApplicationLogger *logger, QWidget *parent = nullptr);
 
     ~MainWindow() override;
-
-    void addLog(const QString &log);
 
 public slots:
 
@@ -100,6 +101,8 @@ private:
     QAction *deleteProfileAction;
     ConnectionSession *connectionSession = nullptr;
     SystemProxySession *systemProxySession = nullptr;
+    ApplicationLogger *applicationLogger;
+    CoreLogFile *coreLogFile = nullptr;
     QNetworkAccessManager *checkUpdateNAM;
     QNetworkAccessManager *checkCoreUpdateNAM;
     QSettings *settings;
