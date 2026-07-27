@@ -1,7 +1,10 @@
+#include <QApplication>
+#include <QCoreApplication>
 #include <QProcess>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QThread>
 #include "utils.h"
 
 #if defined(Q_OS_WINDOWS)
@@ -12,6 +15,31 @@
 #endif
 
 const QString macOSNetworkSetupPath = "/usr/sbin/networksetup";
+
+namespace
+{
+void showProxyError(const QString &title, const QString &message)
+{
+    auto *application = qobject_cast<QApplication *>(QCoreApplication::instance());
+    if (application == nullptr)
+    {
+        qWarning() << title << message;
+        return;
+    }
+
+    if (QThread::currentThread() == application->thread())
+    {
+        QMessageBox::critical(nullptr, title, message);
+        return;
+    }
+
+    QMetaObject::invokeMethod(
+        application,
+        [title, message]() { QMessageBox::critical(nullptr, title, message); },
+        Qt::QueuedConnection
+    );
+}
+}
 
 void windowsSetProxyForAllConnections(const QString &proxyServer, const QString &bypass)
 {
@@ -135,12 +163,12 @@ QStringList macOSGetActiveNetworkServices()
     process.waitForFinished();
     if (process.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "获取网络服务失败", "执行命令失败：" + process.errorString());
+        showProxyError("获取网络服务失败", "执行命令失败：" + process.errorString());
         return {};
     }
     if (process.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "获取网络服务失败", "无法获取网络服务：" + process.readAllStandardError());
+        showProxyError("获取网络服务失败", "无法获取网络服务：" + process.readAllStandardError());
         return {};
     }
     /*
@@ -199,12 +227,12 @@ bool macOSIsSystemProxySet(macOSProxyType proxyType, const QString networkServic
     process.waitForFinished();
     if (process.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "获取系统代理设置失败", "执行命令失败：" + process.errorString());
+        showProxyError("获取系统代理设置失败", "执行命令失败：" + process.errorString());
         return true;
     }
     if (process.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "获取系统代理设置失败", "无法获取系统代理设置：" + process.readAllStandardError());
+        showProxyError("获取系统代理设置失败", "无法获取系统代理设置：" + process.readAllStandardError());
         return true;
     }
     QString output = process.readAllStandardOutput();
@@ -241,12 +269,12 @@ void macOSSetSystemProxy(macOSProxyType proxyType, const QString &networkService
     setProcess.waitForFinished();
     if (setProcess.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "设置系统代理失败", "执行命令失败：" + setProcess.errorString());
+        showProxyError("设置系统代理失败", "执行命令失败：" + setProcess.errorString());
         return;
     }
     if (setProcess.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "设置系统代理失败", "无法设置系统代理：" + setProcess.readAllStandardError());
+        showProxyError("设置系统代理失败", "无法设置系统代理：" + setProcess.readAllStandardError());
         return;
     }
     enableArgs << networkService << "on";
@@ -255,12 +283,12 @@ void macOSSetSystemProxy(macOSProxyType proxyType, const QString &networkService
     enableProcess.waitForFinished();
     if (enableProcess.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "启用系统代理失败", "执行命令失败：" + enableProcess.errorString());
+        showProxyError("启用系统代理失败", "执行命令失败：" + enableProcess.errorString());
         return;
     }
     if (enableProcess.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "启用系统代理失败", "无法启用系统代理：" + enableProcess.readAllStandardError());
+        showProxyError("启用系统代理失败", "无法启用系统代理：" + enableProcess.readAllStandardError());
         return;
     }
 }
@@ -286,12 +314,12 @@ void macOSDisableSystemProxy(macOSProxyType proxyType, const QString &networkSer
     process.waitForFinished();
     if (process.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "禁用系统代理失败", "执行命令失败：" + process.errorString());
+        showProxyError("禁用系统代理失败", "执行命令失败：" + process.errorString());
         return;
     }
     if (process.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "禁用系统代理失败", "无法禁用系统代理：" + process.readAllStandardError());
+        showProxyError("禁用系统代理失败", "无法禁用系统代理：" + process.readAllStandardError());
         return;
     }
 }
@@ -307,12 +335,12 @@ void macOSSetProxyBypass(const QString &networkService, const QString &bypass)
     process.waitForFinished();
     if (process.error() != QProcess::UnknownError)
     {
-        QMessageBox::critical(nullptr, "设置代理绕过失败", "执行命令失败：" + process.errorString());
+        showProxyError("设置代理绕过失败", "执行命令失败：" + process.errorString());
         return;
     }
     if (process.exitCode() != 0)
     {
-        QMessageBox::critical(nullptr, "设置代理绕过失败", "无法设置代理绕过：" + process.readAllStandardError());
+        showProxyError("设置代理绕过失败", "无法设置代理绕过：" + process.readAllStandardError());
         return;
     }
 }
@@ -427,7 +455,7 @@ void linuxSetSystemProxy(const QString &proxyServer, int httpPort, int socksPort
 
     if (results.count(true) != actions.size())
     {
-        QMessageBox::critical(nullptr, "设置系统代理失败", "存在失败的命令");
+        showProxyError("设置系统代理失败", "存在失败的命令");
     }
 }
 
