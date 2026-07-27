@@ -4,8 +4,6 @@
 #include <QDialog>
 #include <QProcess>
 
-class MainWindow;
-
 class AuthInfoWindow : public QDialog
 {
 	Q_OBJECT
@@ -22,7 +20,6 @@ signals:
 
 private:
 	Ui::AuthInfoWindow *ui;
-    MainWindow *mainWindow = nullptr;
     QProcess *proc_ = nullptr;
     QByteArray stdoutBuf_;
     QByteArray stderrBuf_;

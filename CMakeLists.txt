@@ -36,12 +36,14 @@ set(SOURCE_FILES
     main.cpp
     mainwindow.cpp
     zjuconnectmode.cpp
+    application/applicationlogger.cpp
     application/connectionsession.cpp
     application/systemproxysession.cpp
     core/corecommandbuilder.cpp
     core/coreoutputbuffer.cpp
     core/coreoutputparser.cpp
     core/connectionsessionstate.cpp
+    infrastructure/corelogfile.cpp
     infrastructure/settingsprofileloader.cpp
     infrastructure/platformsystemproxybackend.cpp
     zjuconnectcontroller/zjuconnectcontroller.cpp
@@ -120,6 +122,22 @@ target_link_libraries(${PROJECT_NAME}
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(applicationlogger_test
+        tests/applicationlogger_test.cpp
+        application/applicationlogger.cpp
+    )
+    target_include_directories(applicationlogger_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(applicationlogger_test Qt::Core)
+    add_test(NAME applicationlogger_test COMMAND applicationlogger_test)
+
+    add_executable(corelogfile_test
+        tests/corelogfile_test.cpp
+        infrastructure/corelogfile.cpp
+    )
+    target_include_directories(corelogfile_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(corelogfile_test Qt::Core)
+    add_test(NAME corelogfile_test COMMAND corelogfile_test)
+
     add_executable(corecommandbuilder_test
         tests/corecommandbuilder_test.cpp
         core/corecommandbuilder.cpp

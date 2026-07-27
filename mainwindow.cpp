@@ -5,6 +5,7 @@
 #include <QNetworkInterface>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QDebug>
 #include <QFileInfo>
 #include <QCoreApplication>
 #include <QActionGroup>
@@ -12,13 +13,16 @@
 
 #include "mainwindow.h"
 
+#include "application/applicationlogger.h"
+#include "infrastructure/corelogfile.h"
 #include "ui_mainwindow.h"
 #include "utils/utils.h"
 #include "zjuconnectcontroller/zjuconnectcontroller.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    applicationLogger(logger)
 {
     profileManager = new ProfileManager();
     const QString overrideConfigPath = Utils::getArgValue(QCoreApplication::arguments(), "--config-path");
@@ -39,6 +43,12 @@ MainWindow::MainWindow(QWidget *parent) :
     isFirstTimeSetMode = true;
 
     ui->setupUi(this);
+    coreLogFile = new CoreLogFile(Utils::getLogFilePath(), this);
+    connect(applicationLogger, &ApplicationLogger::entryAdded, this,
+            [this](const QString &entry)
+            {
+                ui->logPlainTextEdit->appendPlainText(entry);
+            });
     systemProxySession = new SystemProxySession(this);
     connect(systemProxySession, &SystemProxySession::busyChanged, this,
             [this](bool busy)
@@ -92,9 +102,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // 文件-打开日志文件
     connect(ui->openLogAction, &QAction::triggered, this,
-            [&]()
+            [this]()
             {
-                QString logFilePath = Utils::getLogFilePath();
+                const QString logFilePath = coreLogFile->filePath();
                 QFileInfo logFileInfo(logFilePath);
 
                 if (logFileInfo.exists())
@@ -103,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
                 else
                 {
-                    QMessageBox::information(this, "日志文件", "日志文件还未生成，请先启动 VPN 连接。");
+                    QMessageBox::warning(this, "日志文件", "日志文件创建失败。");
                 }
             });
 
@@ -129,7 +139,7 @@ MainWindow::MainWindow(QWidget *parent) :
                         {
                             if (!enabled)
                             {
-                                addLog("已清理系统代理设置");
+                                qInfo().noquote() << "已清理系统代理设置";
                             }
                         },
                         Qt::SingleShotConnection);
@@ -154,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
 
                 Utils::clearClientData(currentProfileId);
-                addLog("已清理登录缓存");
+                qInfo().noquote() << "已清理登录缓存";
             });
 
     // 文件-设置授信设备
@@ -168,12 +178,12 @@ MainWindow::MainWindow(QWidget *parent) :
                         settings->value("ZJUConnect/ServerAddress").toString(),
                         settings->value("ZJUConnect/ServerPort").toInt(),
                         currentProfileId, true);
-                    addLog("设置授信设备成功");
+                    qInfo().noquote() << "设置授信设备成功";
                     QMessageBox::information(this, "成功", "已设置授信设备");
                 }
                 catch (const std::runtime_error &e)
                 {
-                    addLog("设置授信设备失败：" + QString(e.what()));
+                    qWarning().noquote() << "设置授信设备失败：" + QString(e.what());
                     QMessageBox::critical(this, "错误", "设置授信设备失败：\n" + QString(e.what()));
                 }
             });
@@ -189,12 +199,12 @@ MainWindow::MainWindow(QWidget *parent) :
                         settings->value("ZJUConnect/ServerAddress").toString(),
                         settings->value("ZJUConnect/ServerPort").toInt(),
                         currentProfileId, false);
-                    addLog("取消授信设备成功");
+                    qInfo().noquote() << "取消授信设备成功";
                     QMessageBox::information(this, "成功", "已取消授信设备");
                 }
                 catch (const std::runtime_error &e)
                 {
-                    addLog("取消授信设备失败：" + QString(e.what()));
+                    qWarning().noquote() << "取消授信设备失败：" + QString(e.what());
                     QMessageBox::critical(this, "错误", "取消授信设备失败：\n" + QString(e.what()));
                 }
             });
@@ -267,7 +277,7 @@ MainWindow::MainWindow(QWidget *parent) :
         this, [&](QNetworkReply* reply) {
             if (reply->error() != QNetworkReply::NoError)
             {
-                addLog("检查 UI 更新失败。原因是：" + reply->errorString());
+                qWarning().noquote() << "检查 UI 更新失败。原因是：" + reply->errorString();
                 ui->versionLabel->setText(
                     "当前版本：" + QApplication::applicationVersion() + "\n检查 UI 更新失败\n"
                 );
@@ -286,7 +296,7 @@ MainWindow::MainWindow(QWidget *parent) :
             {
                 latestVersion = latestVersion.mid(1);
             }
-            addLog("检查 UI 更新成功。最新版本：" + latestVersion);
+            qInfo().noquote() << "检查 UI 更新成功。最新版本：" + latestVersion;
 			versionInfo.ui_latest = latestVersion;
 			updateVersionInfo();
 
@@ -319,7 +329,7 @@ MainWindow::MainWindow(QWidget *parent) :
         this, [&](QNetworkReply* reply) {
             if (reply->error() != QNetworkReply::NoError)
             {
-                addLog("检查核心更新失败。原因是：" + reply->errorString());
+                qWarning().noquote() << "检查核心更新失败。原因是：" + reply->errorString();
                 ui->versionLabel->setText(
                     "当前版本：" + QApplication::applicationVersion() + "\n检查核心更新失败\n"
                 );
@@ -338,7 +348,7 @@ MainWindow::MainWindow(QWidget *parent) :
             {
                 latestVersion = latestVersion.mid(1);
             }
-            addLog("检查核心更新成功。最新版本：" + latestVersion);
+            qInfo().noquote() << "检查核心更新成功。最新版本：" + latestVersion;
             versionInfo.core_latest = latestVersion;
             updateVersionInfo();
 
@@ -349,7 +359,7 @@ MainWindow::MainWindow(QWidget *parent) :
             if (latestVersionQ > nowVersionQ ||
                 (latestVersionQ == nowVersionQ && latestVersion.right(latestVersionSuffix) != nowVersion.right(nowVersionSuffix)))
             {
-                addLog("核心版本存在更新，可手动更新或通知开发者更新。");
+                qInfo().noquote() << "核心版本存在更新，可手动更新或通知开发者更新。";
             }
         });
 
@@ -402,12 +412,6 @@ void MainWindow::changeEvent(QEvent *event)
     {
         event->accept();
     }
-}
-
-void MainWindow::addLog(const QString &log)
-{
-    QString timeString = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-    ui->logPlainTextEdit->appendPlainText(timeString + " " + log.trimmed());
 }
 
 void MainWindow::clearLog()
@@ -624,7 +628,7 @@ bool MainWindow::switchProfile(const QString &profileId)
     clearLog();
     refreshProfileMenu();
 
-    addLog("已切换到配置：" + currentProfileId);
+    qInfo().noquote() << "已切换到配置：" + currentProfileId;
     return true;
 }
 
@@ -700,7 +704,7 @@ void MainWindow::renameCurrentProfile()
     updateVersionInfo();
     refreshProfileMenu();
     clearLog();
-    addLog("当前配置已重命名为：" + currentProfileId);
+    qInfo().noquote() << "当前配置已重命名为：" + currentProfileId;
 }
 
 void MainWindow::deleteCurrentProfile()
@@ -740,7 +744,7 @@ void MainWindow::deleteCurrentProfile()
     }
 
     refreshProfileMenu();
-    addLog("已删除配置：" + removedProfileId);
+    qInfo().noquote() << "已删除配置：" + removedProfileId;
 }
 
 void MainWindow::checkUpdate()
@@ -748,11 +752,11 @@ void MainWindow::checkUpdate()
     try
     {
         versionInfo.core_version = Utils::checkCoreVersion(this);
-		addLog("检查核心版本成功：" + versionInfo.core_version);
+		qInfo().noquote() << "检查核心版本成功：" + versionInfo.core_version;
     }
     catch (const std::runtime_error& e)
     {
-        addLog("检查核心版本失败：" + QString(e.what()));
+        qWarning().noquote() << "检查核心版本失败：" + QString(e.what());
         versionInfo.core_version = "错误";
     }
     QNetworkRequest request(QUrl("https://api.github.com/repos/" + Utils::REPO_NAME + "/releases/latest"));

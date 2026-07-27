@@ -2,6 +2,7 @@
 
 #include "SingleApplication"
 
+#include "application/applicationlogger.h"
 #include "mainwindow.h"
 #include "utils/utils.h"
 
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
     QApplication::setApplicationDisplayName(Utils::APP_NAME);
     QApplication::setApplicationVersion(PROJ_VER);
     QLocale::setDefault(QLocale(QLocale::Chinese, QLocale::SimplifiedChineseScript, QLocale::China));
+
+    ApplicationLogger applicationLogger;
 
 #if defined(Q_OS_WINDOWS)
     QApplication::setFont(QFont("Microsoft YaHei UI", QApplication::font().pointSize()));
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
     else
         qDebug() << "Failed to load transaction file for" << translateModule;
 
-    MainWindow mainWindow;
+    MainWindow mainWindow(&applicationLogger);
 
     QObject::connect(&app, &SingleApplication::aboutToQuit, &mainWindow, &MainWindow::cleanUpWhenQuit);
 
