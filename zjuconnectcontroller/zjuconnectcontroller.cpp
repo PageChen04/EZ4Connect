@@ -1,5 +1,6 @@
 #include "zjuconnectcontroller.h"
 #include "mainwindow.h"
+#include "core/corecommandbuilder.h"
 #include "utils/utils.h"
 #include <qcontainerfwd.h>
 #include <QCoreApplication>
@@ -244,19 +245,21 @@ void ZjuConnectController::start(
     const QString& profileId
 )
 {
-    QStringList args;
+    ConnectionProfile profile;
+    profile.program = program;
+    profile.profileId = profileId;
+    profile.credentials = {username, password, totpSecret, certFile, certPassword};
+    profile.endpoint = {protocol, authType, loginDomain, phone, server, port};
+    profile.dns = {dns, dnsAuto, secondaryDns, dnsTtl, disableZjuDns, customDNS};
+    profile.proxy = {socksBind, httpBind, shadowsocksUrl, dialDirectProxy, proxyAll, customProxyDomain};
+    profile.tunnel = {tunMode, addRoute, dnsHijack, fakeIp, tcpTunnelMode,
+                      tcpPortForwarding, udpPortForwarding};
+    profile.behavior = {updateBestNodesInterval, disableMultiLine, disableKeepAlive,
+                        keepAliveUrl, bindInterface, autoDetectInterface, skipDomainResource,
+                        disableServerConfig, disableZjuConfig, debugDump};
+    profile.extraArguments = extraArguments;
 
-    if (!protocol.isEmpty())
-    {
-        args.append("-protocol");
-        args.append(protocol);
-    }
-
-    if (!authType.isEmpty())
-    {
-        args.append("-auth-type");
-        args.append("auth/" + authType);
-    }
+    CoreRuntimePaths runtimePaths;
 
     if (protocol == "atrust")
     {
@@ -267,242 +270,25 @@ void ZjuConnectController::start(
             tempDir->setAutoRemove(true);
         }
         graphFile = tempDir->filePath("graph.jpg");
-        args.append("-graph-code-file");
-        args.append(graphFile);
-
-        // 存放 Client Data
-        args.append("-client-data-file");
-        args.append(Utils::getClientDataPath(profileId));
+        runtimePaths.graphCodeFile = graphFile;
+        runtimePaths.clientDataFile = Utils::getClientDataPath(profileId);
     }
 
-    if (!phone.isEmpty())
-    {
-        args.append("-phone");
-        args.append(phone);
-    }
-
-    if (!loginDomain.isEmpty())
-    {
-        args.append("-login-domain");
-        args.append(loginDomain);
-    }
-
-    if (!server.isEmpty())
-    {
-        args.append("-server");
-        args.append(server);
-    }
-
-    if (port != 0)
-    {
-        args.append("-port");
-        args.append(QString::number(port));
-    }
-
-    if (!dns.isEmpty() || dnsAuto)
-    {
-        args.append("-zju-dns-server");
-		if (dnsAuto)
-		{
-			args.append("auto");
-		}
-		else
-		{
-			args.append(dns);
-		}
-    }
-
-    if (dnsTtl != 3600)
-    {
-        args.append("-dns-ttl");
-        args.append(QString::number(dnsTtl));
-    }
-
-    if (!secondaryDns.isEmpty())
-    {
-        args.append("-secondary-dns-server");
-        args.append(secondaryDns);
-    }
-
-    if (disableMultiLine)
-    {
-        args.append("-disable-multi-line");
-    }
-
-    if (disableKeepAlive)
-    {
-        args.append("-disable-keep-alive");
-    }
-
-    if (!keepAliveUrl.isEmpty())
-    {
-        args.append("-keep-alive-url");
-        args.append(keepAliveUrl);
-    }
-
-    if (!bindInterface.isEmpty())
-    {
-        args.append("-bind-interface");
-        args.append(bindInterface);
-    }
-
-    if (autoDetectInterface)
-    {
-        args.append("-auto-detect-interface");
-    }
-
-    if (disableZjuConfig)
-    {
-        args.append("-disable-zju-config");
-    }
-
-    if (disableZjuDns)
-    {
-        args.append("-disable-zju-dns");
-    }
-
-    if (disableServerConfig)
-    {
-        args.append("-disable-server-config");
-    }
-
-    if (proxyAll)
-    {
-        args.append("-proxy-all");
-    }
-
-    if (skipDomainResource)
-    {
-        args.append("-skip-domain-resource");
-    }
-
-    if (tunMode)
-    {
-        args.append("-tun-mode");
-
-        if (dnsHijack)
-        {
-            args.append("-dns-hijack");
-            if (fakeIp)
-            {
-                args.append("-fake-ip");
-            }
-        }
-
-        if (addRoute)
-        {
-            args.append("-add-route");
-        }
-    }
-
-    if (tcpTunnelMode)
-    {
-        args.append("-tcp-tunnel-mode");
-    }
-
-    if (debugDump)
-    {
-        args.append("-debug-dump");
-    }
-
-    if (!socksBind.isEmpty())
-    {
-        args.append("-socks-bind");
-        args.append(socksBind);
-    }
-
-    if (!httpBind.isEmpty())
-    {
-        args.append("-http-bind");
-        args.append(httpBind);
-    }
-
-    if (!shadowsocksUrl.isEmpty())
-    {
-        args.append("-shadowsocks-url");
-        args.append(shadowsocksUrl);
-    }
-
-    if (!dialDirectProxy.isEmpty())
-    {
-        args.append("-dial-direct-proxy");
-        args.append(dialDirectProxy);
-    }
-
-    if (updateBestNodesInterval != 300)
-    {
-        args.append("-update-best-nodes-interval");
-        args.append(QString::number(updateBestNodesInterval));
-    }
-
-    if (!tcpPortForwarding.isEmpty())
-    {
-        args.append("-tcp-port-forwarding");
-        args.append(tcpPortForwarding);
-    }
-
-    if (!udpPortForwarding.isEmpty())
-    {
-        args.append("-udp-port-forwarding");
-        args.append(udpPortForwarding);
-    }
-
-    if (!customDNS.isEmpty())
-    {
-        args.append("-custom-dns");
-        args.append(customDNS);
-    }
-
-    if (!customProxyDomain.isEmpty())
-    {
-        args.append("-custom-proxy-domain");
-        args.append(customProxyDomain);
-    }
-
-    if (!extraArguments.isEmpty())
-    {
-        args.append(extraArguments.split(" "));
-    }
-
+    const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     QString timeString = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    emit outputRead(timeString + " VPN 启动！参数：" + args.join(' '));
-
-    QStringList credentialList;
-
-    if (!username.isEmpty())
-    {
-        credentialList.append("-username");
-        credentialList.append(username);
-    }
-
-    if (!password.isEmpty())
-    {
-        credentialList.append("-password");
-        credentialList.append(password);
-    }
+    emit outputRead(timeString + " VPN 启动！参数：" + command.loggableArguments.join(' '));
 
     if (!totpSecret.isEmpty())
     {
         emit outputRead(timeString + " 使用了 TOTP");
-        credentialList.append("-totp-secret");
-        credentialList.append(totpSecret);
     }
-
     if (!certFile.isEmpty())
     {
         emit outputRead(timeString + " 使用了证书文件");
-        args.append("-cert-file");
-        args.append(certFile);
-    }
-
-    if (!certPassword.isEmpty())
-    {
-        args.append("-cert-password");
-        args.append(certPassword);
     }
 
     QString programToStart = program;
-    QStringList finalArgs = credentialList + args;
+    QStringList finalArgs = command.arguments;
 
 #if defined(Q_OS_UNIX)
     if (tunMode && !Utils::isRunningAsAdmin())
