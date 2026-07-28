@@ -87,7 +87,7 @@ if (WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}/resource/icon.rc
     )
 
-    set(PLATFORM_LIBS wininet rasapi32)
+    set(PLATFORM_LIBS wininet rasapi32 shell32)
 elseif(APPLE)
     message("Building for MacOS")
     
