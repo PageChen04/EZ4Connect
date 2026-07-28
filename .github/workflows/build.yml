@@ -459,6 +459,7 @@ jobs:
           gh release upload ${{ github.event.release.tag_name }} ${{ env.ARCHIVE_PREFIX }}-*
 
       - name: Update AUR PKGBUILD
+        if: ${{ !github.event.release.prerelease }}
         env:
           AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -481,10 +482,27 @@ jobs:
           sudo apt-get install -y pacman-package-manager
 
           VERSION="${RELEASE_TAG#v}"
+          PKG_VERSION="${VERSION%%-*}"
+          CURRENT_PKG_VERSION="$(sed -n 's/^pkgver=//p' PKGBUILD)"
+          CURRENT_PKG_REL="$(sed -n 's/^pkgrel=//p' PKGBUILD)"
+          if [ "$CURRENT_PKG_VERSION" = "$PKG_VERSION" ]; then
+            PKG_REL=$((CURRENT_PKG_REL + 1))
+          else
+            PKG_REL=1
+          fi
+
+          if grep -q '^_releasever=' PKGBUILD; then
+            sed -i "s/^_releasever=.*/_releasever=${VERSION}/" PKGBUILD
+          else
+            sed -i "/^pkgrel=/a _releasever=${VERSION}" PKGBUILD
+          fi
+          sed -i 's/${pkgver}/${_releasever}/g' PKGBUILD
+
           SOURCE_URL="https://github.com/chenx-dust/EZ4Connect/archive/refs/tags/v${VERSION}.tar.gz"
           SOURCE_SHA256="$(curl -L "$SOURCE_URL" | sha256sum | awk '{print $1}')"
 
-          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+          sed -i "s/^pkgver=.*/pkgver=${PKG_VERSION}/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=${PKG_REL}/" PKGBUILD
           sed -i "s/^sha256sums=.*/sha256sums=('${SOURCE_SHA256}')/" PKGBUILD
           makepkg --printsrcinfo > .SRCINFO
 
