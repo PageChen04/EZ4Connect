@@ -4,7 +4,7 @@ on:
   release:
     types: [ created ]
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
     tags-ignore: [ 'v*' ]
   pull_request:
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
         description: "Version (e.g. v0.0.0)"
 
 env:
-  QT_VERSION: '6.10.2'
+  QT_VERSION: '6.10.3'
   TARGET_NAME: 'EZ4Connect'
   DISPLAY_NAME: 'EZ4Connect'
 
