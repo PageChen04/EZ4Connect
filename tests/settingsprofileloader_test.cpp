@@ -3,7 +3,7 @@
 #include <QSettings>
 #include <QTemporaryDir>
 
-#include "infrastructure/settingsprofileloader.h"
+#include "infrastructure/settings/settingsprofileloader.h"
 
 namespace
 {

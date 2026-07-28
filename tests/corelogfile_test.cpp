@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QTemporaryDir>
 
-#include "infrastructure/corelogfile.h"
+#include "infrastructure/logging/corelogfile.h"
 
 namespace
 {

@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QList>
 
-#include "core/coreoutputparser.h"
+#include "infrastructure/coreprocess/coreoutputparser.h"
 
 namespace
 {

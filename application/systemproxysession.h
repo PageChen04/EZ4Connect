@@ -13,7 +13,6 @@ class SystemProxySession : public QObject
 Q_OBJECT
 
 public:
-    explicit SystemProxySession(QObject *parent = nullptr);
     explicit SystemProxySession(std::unique_ptr<SystemProxyBackend> backend, QObject *parent = nullptr);
     ~SystemProxySession() override;
 

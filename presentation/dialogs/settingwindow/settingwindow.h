@@ -1,0 +1,45 @@
+#ifndef SETTINGWINDOW_H
+#define SETTINGWINDOW_H
+
+#include <QDialog>
+#include <QSettings>
+#include "ui_settingwindow.h"
+#include "presentation/dialogs/extrasettingwindow/extrasettingwindow.h"
+#include "presentation/dialogs/authinfowindow/authinfowindow.h"
+
+namespace Ui
+{
+    class SettingWindow;
+}
+
+class SettingWindow : public QDialog
+{
+Q_OBJECT
+
+public:
+    explicit SettingWindow(QWidget *parent = nullptr, QSettings *settings = nullptr, const QString &profileId = "");
+
+    ~SettingWindow() override;
+
+private:
+    void loadSettings();
+    void applySettings();
+    bool isAuthSettingChanged();
+    bool shouldCheckCredential();
+
+    Ui::SettingWindow *ui;
+
+    QSettings *settings;
+    QString profileId;
+
+    ExtraSettingWindow *extraSettingWindow;
+    AuthInfoWindow *authInfoWindow;
+
+    QString tcpPortForwarding;
+    QString udpPortForwarding;
+    QString customDNS;
+    QString customProxyDomain;
+    QString extraArguments;
+};
+
+#endif //SETTINGWINDOW_H
