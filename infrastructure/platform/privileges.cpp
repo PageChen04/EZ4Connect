@@ -4,8 +4,8 @@
 #include <QStringList>
 
 #if defined(Q_OS_WIN)
-#include <shellapi.h>
 #include <windows.h>
+#include <shellapi.h>
 #elif defined(Q_OS_UNIX)
 #include <unistd.h>
 #endif
