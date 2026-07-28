@@ -4,16 +4,16 @@
 #include <QObject>
 #include <QTimer>
 
+#include "application/coreprocess.h"
 #include "core/connectionprofile.h"
 #include "core/connectionsessionstate.h"
-#include "zjuconnectcontroller/zjuconnectcontroller.h"
 
 class ConnectionSession : public QObject
 {
 Q_OBJECT
 
 public:
-    explicit ConnectionSession(QObject *parent = nullptr);
+    explicit ConnectionSession(CoreProcess *coreProcess, QObject *parent = nullptr);
 
     bool start(const ConnectionProfile &profile, const ReconnectPolicy &policy);
     void stop();
@@ -40,7 +40,7 @@ private:
     void handleCoreFinished();
     void handleSudoPasswordRequest();
 
-    ZjuConnectController *controller;
+    CoreProcess *coreProcess;
     QTimer reconnectTimer;
     ConnectionSessionState sessionState;
     ConnectionProfile currentProfile;

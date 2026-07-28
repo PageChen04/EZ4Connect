@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "core/corecommandbuilder.h"
+#include "infrastructure/coreprocess/corecommandbuilder.h"
 
 namespace
 {

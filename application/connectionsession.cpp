@@ -1,29 +1,30 @@
 #include "connectionsession.h"
 
-ConnectionSession::ConnectionSession(QObject *parent)
+ConnectionSession::ConnectionSession(CoreProcess *coreProcess, QObject *parent)
     : QObject(parent),
-      controller(new ZjuConnectController(this))
+      coreProcess(coreProcess)
 {
+    coreProcess->setParent(this);
     reconnectTimer.setSingleShot(true);
 
-    connect(controller, &ZjuConnectController::outputRead, this, &ConnectionSession::outputRead);
-    connect(controller, &ZjuConnectController::graphCaptcha, this, &ConnectionSession::graphCaptcha);
-    connect(controller, &ZjuConnectController::smsCode, this, &ConnectionSession::smsCode);
-    connect(controller, &ZjuConnectController::totpCode, this, &ConnectionSession::totpCode);
-    connect(controller, &ZjuConnectController::ssoAuth, this, &ConnectionSession::ssoAuth);
-    connect(controller, &ZjuConnectController::askSudoPass,
+    connect(coreProcess, &CoreProcess::outputRead, this, &ConnectionSession::outputRead);
+    connect(coreProcess, &CoreProcess::graphCaptcha, this, &ConnectionSession::graphCaptcha);
+    connect(coreProcess, &CoreProcess::smsCode, this, &ConnectionSession::smsCode);
+    connect(coreProcess, &CoreProcess::totpCode, this, &ConnectionSession::totpCode);
+    connect(coreProcess, &CoreProcess::ssoAuth, this, &ConnectionSession::ssoAuth);
+    connect(coreProcess, &CoreProcess::askSudoPass,
             this, &ConnectionSession::handleSudoPasswordRequest);
 
-    connect(controller, &ZjuConnectController::error, this, [this](ZJU_ERROR error)
+    connect(coreProcess, &CoreProcess::error, this, [this](ZJU_ERROR error)
     {
         sessionState.recordError(error);
     });
-    connect(controller, &ZjuConnectController::started, this, [this]()
+    connect(coreProcess, &CoreProcess::started, this, [this]()
     {
         sessionState.processStarted();
         emit stateChanged(sessionState.state());
     });
-    connect(controller, &ZjuConnectController::finished,
+    connect(coreProcess, &CoreProcess::finished,
             this, &ConnectionSession::handleCoreFinished);
     connect(&reconnectTimer, &QTimer::timeout, this, [this]()
     {
@@ -65,13 +66,13 @@ void ConnectionSession::stop()
     if (processNeedsStop)
     {
         emit stateChanged(sessionState.state());
-        controller->stop();
+        coreProcess->stop();
     }
 }
 
 void ConnectionSession::submitInput(const QByteArray &data)
 {
-    controller->writeInput(data);
+    coreProcess->writeInput(data);
 }
 
 void ConnectionSession::submitSudoPassword(const QString &password, bool remember)
@@ -103,7 +104,7 @@ bool ConnectionSession::isActive() const
 void ConnectionSession::startCore()
 {
     sudoPasswordSubmitted = false;
-    controller->start(currentProfile);
+    coreProcess->start(currentProfile);
 }
 
 void ConnectionSession::handleCoreFinished()

@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "core/coreoutputbuffer.h"
+#include "infrastructure/coreprocess/coreoutputbuffer.h"
 
 namespace
 {

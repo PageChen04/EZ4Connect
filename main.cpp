@@ -1,10 +1,14 @@
 #include <QApplication>
+#include <QDebug>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
 
 #include "SingleApplication"
 
 #include "application/applicationlogger.h"
-#include "mainwindow.h"
-#include "utils/utils.h"
+#include "application/applicationconstants.h"
+#include "presentation/main/mainwindow.h"
 
 #ifndef PROJ_VER
 #define PROJ_VER "unknown"
@@ -13,8 +17,8 @@
 int main(int argc, char *argv[])
 {
     SingleApplication app(argc, argv, false, SingleApplication::Mode::System);
-    QApplication::setApplicationName(Utils::APP_NAME);
-    QApplication::setApplicationDisplayName(Utils::APP_NAME);
+    QApplication::setApplicationName(ApplicationConstants::ApplicationName);
+    QApplication::setApplicationDisplayName(ApplicationConstants::ApplicationName);
     QApplication::setApplicationVersion(PROJ_VER);
     QLocale::setDefault(QLocale(QLocale::Chinese, QLocale::SimplifiedChineseScript, QLocale::China));
 

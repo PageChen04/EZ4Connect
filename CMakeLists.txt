@@ -34,32 +34,44 @@ find_package(Qt6 COMPONENTS
 
 set(SOURCE_FILES
     main.cpp
-    mainwindow.cpp
-    zjuconnectmode.cpp
+    presentation/main/mainwindow.cpp
+    presentation/main/mainwindowcoordinator.cpp
+    presentation/coordinators/authdialogcoordinator.cpp
+    presentation/coordinators/connectionuicontroller.cpp
     application/applicationlogger.cpp
+    application/commandlineoptions.cpp
+    application/coreprocess.h
     application/connectionsession.cpp
+    application/profileservice.cpp
+    application/settingsmigrator.cpp
     application/systemproxysession.cpp
-    core/corecommandbuilder.cpp
-    core/coreoutputbuffer.cpp
-    core/coreoutputparser.cpp
+    application/defaultsettings.cpp
+    infrastructure/coreprocess/corecommandbuilder.cpp
+    infrastructure/coreprocess/consoleoutputdecoder.cpp
+    infrastructure/coreprocess/coreexecutable.cpp
+    infrastructure/coreprocess/devicetrust.cpp
+    infrastructure/coreprocess/coreoutputbuffer.cpp
+    infrastructure/coreprocess/coreoutputparser.cpp
     core/connectionsessionstate.cpp
-    infrastructure/corelogfile.cpp
-    infrastructure/settingsprofileloader.cpp
-    infrastructure/platformsystemproxybackend.cpp
-    zjuconnectcontroller/zjuconnectcontroller.cpp
-    extrasettingwindow/extrasettingwindow.cpp
-    settingwindow/settingwindow.cpp
-    loginwindow/loginwindow.cpp
-    sudowindow/sudowindow.cpp
-    ssologinwebview/ssologinwebview.cpp
-    authinfowindow/authinfowindow.cpp
-    graphcaptchawindow/graphcaptchawindow.cpp
-    graphcaptchawindow/captchacanvas.cpp
-    utils/utils.cpp
-    utils/profilemanager.cpp
-    utils/proxysettings.cpp
-    utils/coreversion.cpp
-    utils/trustdevice.cpp
+    infrastructure/logging/corelogfile.cpp
+    infrastructure/platform/autostart.cpp
+    infrastructure/platform/privileges.cpp
+    infrastructure/settings/settingsprofileloader.cpp
+    infrastructure/storage/applicationpaths.cpp
+    infrastructure/update/updatechecker.cpp
+    infrastructure/platform/platformsystemproxybackend.cpp
+    infrastructure/platform/systemproxyfunctions.cpp
+    infrastructure/coreprocess/zjuconnectprocess.cpp
+    presentation/presentationhelpers.cpp
+    presentation/dialogs/extrasettingwindow/extrasettingwindow.cpp
+    presentation/dialogs/settingwindow/settingwindow.cpp
+    presentation/dialogs/loginwindow/loginwindow.cpp
+    presentation/dialogs/sudowindow/sudowindow.cpp
+    presentation/dialogs/ssologinwebview/ssologinwebview.cpp
+    presentation/dialogs/authinfowindow/authinfowindow.cpp
+    presentation/dialogs/graphcaptchawindow/graphcaptchawindow.cpp
+    presentation/dialogs/graphcaptchawindow/captchacanvas.cpp
+    infrastructure/settings/profilemanager.cpp
     resource.qrc
 )
 
@@ -132,7 +144,7 @@ if(BUILD_TESTING)
 
     add_executable(corelogfile_test
         tests/corelogfile_test.cpp
-        infrastructure/corelogfile.cpp
+        infrastructure/logging/corelogfile.cpp
     )
     target_include_directories(corelogfile_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(corelogfile_test Qt::Core)
@@ -140,7 +152,7 @@ if(BUILD_TESTING)
 
     add_executable(corecommandbuilder_test
         tests/corecommandbuilder_test.cpp
-        core/corecommandbuilder.cpp
+        infrastructure/coreprocess/corecommandbuilder.cpp
     )
     target_include_directories(corecommandbuilder_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(corecommandbuilder_test Qt::Core)
@@ -148,7 +160,7 @@ if(BUILD_TESTING)
 
     add_executable(coreoutputparser_test
         tests/coreoutputparser_test.cpp
-        core/coreoutputparser.cpp
+        infrastructure/coreprocess/coreoutputparser.cpp
     )
     target_include_directories(coreoutputparser_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(coreoutputparser_test Qt::Core)
@@ -156,7 +168,7 @@ if(BUILD_TESTING)
 
     add_executable(coreoutputbuffer_test
         tests/coreoutputbuffer_test.cpp
-        core/coreoutputbuffer.cpp
+        infrastructure/coreprocess/coreoutputbuffer.cpp
     )
     target_include_directories(coreoutputbuffer_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(coreoutputbuffer_test Qt::Core)
@@ -164,7 +176,7 @@ if(BUILD_TESTING)
 
     add_executable(settingsprofileloader_test
         tests/settingsprofileloader_test.cpp
-        infrastructure/settingsprofileloader.cpp
+        infrastructure/settings/settingsprofileloader.cpp
     )
     target_include_directories(settingsprofileloader_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(settingsprofileloader_test Qt::Core)
@@ -178,13 +190,55 @@ if(BUILD_TESTING)
     target_link_libraries(connectionsessionstate_test Qt::Core)
     add_test(NAME connectionsessionstate_test COMMAND connectionsessionstate_test)
 
+    add_executable(connectionsession_test
+        tests/connectionsession_test.cpp
+        application/coreprocess.h
+        application/connectionsession.cpp
+        core/connectionsessionstate.cpp
+    )
+    target_include_directories(connectionsession_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(connectionsession_test Qt::Core)
+    add_test(NAME connectionsession_test COMMAND connectionsession_test)
+
     add_executable(systemproxysession_test
         tests/systemproxysession_test.cpp
         application/systemproxysession.cpp
-        infrastructure/platformsystemproxybackend.cpp
-        utils/proxysettings.cpp
     )
     target_include_directories(systemproxysession_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(systemproxysession_test Qt::Core Qt::Concurrent Qt::Network Qt::Widgets ${PLATFORM_LIBS})
+    target_link_libraries(systemproxysession_test Qt::Core Qt::Concurrent)
     add_test(NAME systemproxysession_test COMMAND systemproxysession_test)
+
+    add_executable(updatechecker_test
+        tests/updatechecker_test.cpp
+        infrastructure/update/updatechecker.cpp
+        infrastructure/coreprocess/coreexecutable.cpp
+    )
+    target_include_directories(updatechecker_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(updatechecker_test Qt::Core Qt::Gui Qt::Widgets Qt::Network Qt::Core5Compat)
+    add_test(NAME updatechecker_test COMMAND updatechecker_test)
+
+    add_executable(settingsmigrator_test
+        tests/settingsmigrator_test.cpp
+        application/settingsmigrator.cpp
+        application/defaultsettings.cpp
+    )
+    target_include_directories(settingsmigrator_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(settingsmigrator_test Qt::Core)
+    add_test(NAME settingsmigrator_test COMMAND settingsmigrator_test)
+
+    add_executable(profileservice_test
+        tests/profileservice_test.cpp
+        application/profileservice.cpp
+    )
+    target_include_directories(profileservice_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(profileservice_test Qt::Core)
+    add_test(NAME profileservice_test COMMAND profileservice_test)
+
+    add_executable(profilemanager_test
+        tests/profilemanager_test.cpp
+        infrastructure/settings/profilemanager.cpp
+    )
+    target_include_directories(profilemanager_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(profilemanager_test Qt::Core)
+    add_test(NAME profilemanager_test COMMAND profilemanager_test)
 endif()

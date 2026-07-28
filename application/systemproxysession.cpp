@@ -2,13 +2,6 @@
 
 #include <QtConcurrent>
 
-#include "infrastructure/platformsystemproxybackend.h"
-
-SystemProxySession::SystemProxySession(QObject *parent)
-    : SystemProxySession(std::make_unique<PlatformSystemProxyBackend>(), parent)
-{
-}
-
 SystemProxySession::SystemProxySession(
     std::unique_ptr<SystemProxyBackend> backend,
     QObject *parent
