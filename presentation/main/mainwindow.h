@@ -67,6 +67,10 @@ private:
 
     void createProfile();
 
+    void openConfigurationGuide();
+
+    void promptFirstLaunchGuide();
+
     void renameCurrentProfile();
 
     void deleteCurrentProfile();

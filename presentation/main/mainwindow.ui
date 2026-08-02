@@ -190,6 +190,7 @@ Line3</string>
     <property name="title">
      <string>配置</string>
     </property>
+    <addaction name="configurationGuideAction"/>
    </widget>
    <addaction name="fileMenu"/>
    <addaction name="profileMenu"/>
@@ -220,6 +221,14 @@ Line3</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="configurationGuideAction">
+   <property name="text">
+    <string>配置引导</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="disableProxyAction">
