@@ -50,7 +50,11 @@ public:
 private:
     void handleConnectClicked();
     void handleProxyClicked();
-    void startConnection(const QString &username, const QString &password);
+    void startConnection(
+        const QString &username,
+        const QString &password,
+        const QString &phone = QString()
+    );
     void showConnectionError(ZJU_ERROR error);
     QSettings *settings() const;
 
