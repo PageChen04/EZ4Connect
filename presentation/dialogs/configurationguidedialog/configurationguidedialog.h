@@ -44,9 +44,15 @@ private:
 
     QWidget *createAuthenticationPage();
 
+    QWidget *createCredentialsPage();
+
     bool validateCurrentPage();
 
     void updateNavigation();
+
+    void updateCredentialsPage();
+
+    void browseCertificateFile();
 
     void selectAuthenticationMethod(
         const QString &authType,
@@ -79,6 +85,16 @@ private:
     QPushButton *fetchAuthenticationButton;
     QRadioButton *passwordAuthenticationRadioButton;
     QRadioButton *certificateAuthenticationRadioButton;
+
+    QStackedWidget *credentialPages = nullptr;
+    QLineEdit *usernameLineEdit;
+    QLineEdit *passwordLineEdit;
+    QLineEdit *totpSecretLineEdit;
+    QLineEdit *countryCodeLineEdit;
+    QLineEdit *phoneNumberLineEdit;
+    QLineEdit *certificateFileLineEdit;
+    QLineEdit *certificatePasswordLineEdit;
+    QLineEdit *certificateTotpSecretLineEdit;
 
     QString selectedAuthType;
     QString selectedLoginDomain;

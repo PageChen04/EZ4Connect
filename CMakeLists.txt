@@ -242,4 +242,23 @@ if(BUILD_TESTING)
     target_include_directories(profilemanager_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(profilemanager_test Qt::Core)
     add_test(NAME profilemanager_test COMMAND profilemanager_test)
+
+    add_executable(configurationguidedialog_test
+        tests/configurationguidedialog_test.cpp
+        presentation/dialogs/configurationguidedialog/configurationguidedialog.cpp
+        presentation/dialogs/authinfowindow/authinfowindow.cpp
+        infrastructure/coreprocess/consoleoutputdecoder.cpp
+        infrastructure/coreprocess/coreexecutable.cpp
+    )
+    target_include_directories(configurationguidedialog_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(configurationguidedialog_test
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+        Qt::Core5Compat
+    )
+    add_test(NAME configurationguidedialog_test COMMAND configurationguidedialog_test)
+    set_tests_properties(configurationguidedialog_test PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()

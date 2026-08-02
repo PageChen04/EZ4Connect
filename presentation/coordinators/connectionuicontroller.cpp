@@ -202,7 +202,7 @@ void ConnectionUiController::handleConnectClicked()
             parentWidget,
             "需要配置证书",
             "当前配置选择了证书认证。\n"
-            "请先在“文件 → 设置 → 认证”中选择证书文件。"
+            "请通过“文件 → 配置引导”选择证书文件。"
         );
         return;
     }
