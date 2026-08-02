@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QActionGroup>
 #include <QInputDialog>
+#include <QTimer>
 
 #include "mainwindow.h"
 
@@ -20,6 +21,7 @@
 #include "infrastructure/storage/applicationpaths.h"
 #include "infrastructure/update/updatechecker.h"
 #include "presentation/coordinators/connectionuicontroller.h"
+#include "presentation/dialogs/configurationguidedialog/configurationguidedialog.h"
 #include "presentation/presentationhelpers.h"
 #include "ui_mainwindow.h"
 
@@ -35,6 +37,8 @@ MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
     currentProfileId = profileService->currentProfileId();
     settings = profileService->settings();
 
+    const bool isFirstLaunch =
+        !settings->contains("Common/ConfigVersion");
     upgradeSettings();
 
     ui->setupUi(this);
@@ -313,6 +317,14 @@ MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
     if (!profileService->silentStartEnabled())
     {
         show();
+        if (isFirstLaunch)
+        {
+            QTimer::singleShot(
+                0,
+                this,
+                &MainWindow::promptFirstLaunchGuide
+            );
+        }
     }
 }
 
@@ -416,11 +428,18 @@ void MainWindow::setupTrayIcon()
 void MainWindow::setupProfileMenu()
 {
     // 务必在 setupTrayIcon 之后调用，以确保 trayProfileMenu 已正确初始化
+    ui->profileMenu->addSeparator();
     newProfileAction = ui->profileMenu->addAction("新建配置");
     renameProfileAction = ui->profileMenu->addAction("重命名当前配置");
     deleteProfileAction = ui->profileMenu->addAction("删除当前配置");
     ui->profileMenu->addSeparator();
 
+    connect(
+        ui->configurationGuideAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::openConfigurationGuide
+    );
     connect(newProfileAction, &QAction::triggered, this, &MainWindow::createProfile);
     connect(renameProfileAction, &QAction::triggered, this, &MainWindow::renameCurrentProfile);
     connect(deleteProfileAction, &QAction::triggered, this, &MainWindow::deleteCurrentProfile);
@@ -434,7 +453,10 @@ void MainWindow::refreshProfileMenu()
     bool remove = false;
     for (QAction *action : actions)
     {
-        if (action == newProfileAction || action == renameProfileAction || action == deleteProfileAction)
+        if (action == ui->configurationGuideAction
+            || action == newProfileAction
+            || action == renameProfileAction
+            || action == deleteProfileAction)
         {
             continue;
         }
@@ -565,20 +587,20 @@ void MainWindow::createProfile()
         return;
     }
 
-    bool ok = false;
-    QString name = QInputDialog::getText(this, "新建配置", "请输入配置名称：\n（仅支持字母、数字、下划线）", QLineEdit::Normal, "", &ok);
-    if (!ok)
+    if (settingWindow != nullptr)
+    {
+        settingWindow->close();
+    }
+
+    ConfigurationGuideDialog guide(this, settings, true);
+    if (guide.exec() != QDialog::Accepted)
     {
         return;
     }
 
-    if (connectionSession != nullptr && connectionSession->isActive())
-    {
-        QMessageBox::warning(this, "新建失败", "请先断开 VPN 连接，再新建配置。");
-        return;
-    }
-
-    const QString newProfileId = profileService->createAndSwitch(name);
+    const QString newProfileId = profileService->createAndSwitch(
+        guide.profileName()
+    );
     if (newProfileId.isEmpty())
     {
         QMessageBox::critical(this, "创建失败", "无法创建新配置。");
@@ -589,10 +611,92 @@ void MainWindow::createProfile()
     currentProfileId = profileService->currentProfileId();
     authenticationDialogs->setSettings(settings);
     upgradeSettings();
+    guide.applyTo(*settings);
     updateVersionInfo();
     resetZjuConnectUi();
     clearLog();
     refreshProfileMenu();
+}
+
+void MainWindow::openConfigurationGuide()
+{
+    if (connectionSession != nullptr && connectionSession->isActive())
+    {
+        QMessageBox::warning(
+            this,
+            "无法修改配置",
+            "请先断开 VPN 连接，再使用配置引导。"
+        );
+        return;
+    }
+
+    if (settingWindow != nullptr)
+    {
+        settingWindow->close();
+    }
+
+    const QString oldServerAddress =
+        settings->value("ZJUConnect/ServerAddress").toString();
+    const int oldServerPort =
+        settings->value("ZJUConnect/ServerPort").toInt();
+    const QString oldProtocol =
+        settings->value("ZJUConnect/Protocol").toString();
+    const QString oldAuthType =
+        settings->value("ZJUConnect/AuthType").toString();
+    const QString oldEasyConnectAuthType =
+        settings->value("ZJUConnect/EasyConnectAuthType").toString();
+    const QString oldLoginDomain =
+        settings->value("ZJUConnect/LoginDomain").toString();
+    const QString oldLoginUrl =
+        settings->value("ZJUConnect/LoginURL").toString();
+
+    ConfigurationGuideDialog guide(this, settings);
+    if (guide.exec() != QDialog::Accepted)
+    {
+        return;
+    }
+    guide.applyTo(*settings);
+
+    const bool authenticationSettingsChanged =
+        oldServerAddress != settings->value("ZJUConnect/ServerAddress").toString()
+        || oldServerPort != settings->value("ZJUConnect/ServerPort").toInt()
+        || oldProtocol != settings->value("ZJUConnect/Protocol").toString()
+        || oldAuthType != settings->value("ZJUConnect/AuthType").toString()
+        || oldEasyConnectAuthType
+            != settings->value("ZJUConnect/EasyConnectAuthType").toString()
+        || oldLoginDomain != settings->value("ZJUConnect/LoginDomain").toString()
+        || oldLoginUrl != settings->value("ZJUConnect/LoginURL").toString();
+    if (authenticationSettingsChanged)
+    {
+        ApplicationPaths::clearClientData(currentProfileId);
+    }
+
+    resetZjuConnectUi();
+    clearLog();
+    qInfo().noquote() << "已通过配置引导更新当前配置";
+}
+
+void MainWindow::promptFirstLaunchGuide()
+{
+    QMessageBox messageBox(this);
+    messageBox.setWindowTitle("欢迎使用 EZ4Connect");
+    messageBox.setText("检测到这是首次启动，是否现在配置 VPN 服务器？");
+    messageBox.setInformativeText(
+        "配置引导将协助你选择协议、填写服务器地址并选择认证方式。"
+    );
+
+    QPushButton *startButton = messageBox.addButton(
+        "开始配置",
+        QMessageBox::AcceptRole
+    );
+    messageBox.addButton("稍后再说", QMessageBox::RejectRole);
+    messageBox.setDefaultButton(startButton);
+    messageBox.exec();
+
+    if (messageBox.clickedButton() == startButton)
+    {
+        openConfigurationGuide();
+    }
 }
 
 void MainWindow::renameCurrentProfile()

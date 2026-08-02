@@ -323,6 +323,10 @@ void SettingWindow::applySettings()
     settings->setValue("ZJUConnect/UpdateBestNodesInterval", ui->updateBestNodesIntervalSpinBox->value());
 
     settings->setValue("ZJUConnect/Protocol", ui->atrustRadioButton->isChecked() ? "atrust" : "easyconnect");
+    settings->setValue(
+        "ZJUConnect/EasyConnectAuthType",
+        ui->certFileLineEdit->text().isEmpty() ? "password" : "certificate"
+    );
     settings->setValue("ZJUConnect/LoginDomain", ui->loginDomainLineEdit->text());
     QString authType;
     if (ui->smsCheckCodeRadioButton->isChecked())

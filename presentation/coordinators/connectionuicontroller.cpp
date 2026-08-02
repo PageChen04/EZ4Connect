@@ -158,6 +158,25 @@ void ConnectionUiController::handleConnectClicked()
         settings()->value("ZJUConnect/Protocol", "easyconnect").toString();
     const QString authType =
         settings()->value("ZJUConnect/AuthType", "psw").toString();
+    const QString easyconnectAuthType = settings()->value(
+        "ZJUConnect/EasyConnectAuthType",
+        settings()->value("Credential/CertFile", "").toString().isEmpty()
+            ? "password"
+            : "certificate"
+    ).toString();
+
+    if (protocol == "easyconnect"
+        && easyconnectAuthType == "certificate"
+        && settings()->value("Credential/CertFile", "").toString().isEmpty())
+    {
+        QMessageBox::information(
+            parentWidget,
+            "需要配置证书",
+            "当前配置选择了证书认证。\n"
+            "请先在“文件 → 设置 → 认证”中选择证书文件。"
+        );
+        return;
+    }
 
 #if defined(Q_OS_WIN)
     if (settings()->value("ZJUConnect/TUNMode").toBool() &&
@@ -181,8 +200,7 @@ void ConnectionUiController::handleConnectClicked()
 
     const bool passwordLogin =
         (protocol == "atrust" && authType == "psw") ||
-        (protocol == "easyconnect" &&
-         settings()->value("Credential/CertFile", "").toString().isEmpty());
+        (protocol == "easyconnect" && easyconnectAuthType != "certificate");
     if (passwordLogin && (username.isEmpty() || password.isEmpty()))
     {
         authenticationDialogs->requestLogin(username, password);

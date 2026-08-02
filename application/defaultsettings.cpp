@@ -30,6 +30,7 @@ void DefaultSettings::reset(QSettings &settings)
     settings.setValue("ZJUConnect/UpdateBestNodesInterval", 300);
 
     settings.setValue("ZJUConnect/Protocol", "atrust");
+    settings.setValue("ZJUConnect/EasyConnectAuthType", "password");
     settings.setValue("ZJUConnect/LoginDomain", "hitcas");
     settings.setValue("ZJUConnect/AuthType", "cas");
     settings.setValue("ZJUConnect/LoginURL", "");

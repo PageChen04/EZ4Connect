@@ -135,10 +135,46 @@ bool usesCompatibleDefaults()
     }
     return passed;
 }
+
+bool respectsEasyConnectAuthenticationMode()
+{
+    QTemporaryDir directory;
+    QSettings settings(directory.filePath("easyconnect.ini"), QSettings::IniFormat);
+    settings.setValue("ZJUConnect/Protocol", "easyconnect");
+    settings.setValue("Credential/CertFile", "/tmp/client.p12");
+    settings.setValue(
+        "Credential/CertPassword",
+        QString(QStringLiteral("cert-password").toUtf8().toBase64())
+    );
+
+    settings.setValue("ZJUConnect/EasyConnectAuthType", "password");
+    const ConnectionProfile passwordProfile =
+        SettingsProfileLoader::load(settings, "", "alice", "secret");
+    if (!passwordProfile.credentials.certFile.isEmpty()
+        || !passwordProfile.credentials.certPassword.isEmpty())
+    {
+        qCritical() << "password mode kept certificate credentials";
+        return false;
+    }
+
+    settings.setValue("ZJUConnect/EasyConnectAuthType", "certificate");
+    const ConnectionProfile certificateProfile =
+        SettingsProfileLoader::load(settings, "", "", "");
+    const bool passed =
+        certificateProfile.credentials.certFile == "/tmp/client.p12"
+        && certificateProfile.credentials.certPassword == "cert-password";
+    if (!passed)
+    {
+        qCritical() << "certificate mode did not load certificate credentials";
+    }
+    return passed;
+}
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    return loadsSettingsIntoTypedProfile() && usesCompatibleDefaults() ? 0 : 1;
+    return loadsSettingsIntoTypedProfile()
+        && usesCompatibleDefaults()
+        && respectsEasyConnectAuthenticationMode() ? 0 : 1;
 }

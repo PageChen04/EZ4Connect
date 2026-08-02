@@ -69,6 +69,7 @@ set(SOURCE_FILES
     presentation/dialogs/sudowindow/sudowindow.cpp
     presentation/dialogs/ssologinwebview/ssologinwebview.cpp
     presentation/dialogs/authinfowindow/authinfowindow.cpp
+    presentation/dialogs/configurationguidedialog/configurationguidedialog.cpp
     presentation/dialogs/graphcaptchawindow/graphcaptchawindow.cpp
     presentation/dialogs/graphcaptchawindow/captchacanvas.cpp
     infrastructure/settings/profilemanager.cpp

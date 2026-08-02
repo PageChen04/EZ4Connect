@@ -9,12 +9,27 @@ ConnectionProfile SettingsProfileLoader::load(
 {
     ConnectionProfile profile;
     profile.profileId = profileId;
+    const QString easyconnectAuthType = settings.value(
+        "ZJUConnect/EasyConnectAuthType",
+        settings.value("Credential/CertFile", "").toString().isEmpty()
+            ? "password"
+            : "certificate"
+    ).toString();
+    const bool useCertificate =
+        settings.value("ZJUConnect/Protocol").toString() != "easyconnect"
+        || easyconnectAuthType == "certificate";
     profile.credentials = {
         username,
         password,
         settings.value("Credential/TOTPSecret").toString(),
-        settings.value("Credential/CertFile", "").toString(),
-        QByteArray::fromBase64(settings.value("Credential/CertPassword", "").toByteArray())
+        useCertificate
+            ? settings.value("Credential/CertFile", "").toString()
+            : QString(),
+        useCertificate
+            ? QByteArray::fromBase64(
+                  settings.value("Credential/CertPassword", "").toByteArray()
+              )
+            : QString()
     };
 
     const QString countryCode = settings.value("ZJUConnect/PhoneCountryCode").toString();
