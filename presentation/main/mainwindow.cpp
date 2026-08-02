@@ -682,7 +682,7 @@ void MainWindow::promptFirstLaunchGuide()
     messageBox.setWindowTitle("欢迎使用 EZ4Connect");
     messageBox.setText("检测到这是首次启动，是否现在配置 VPN 服务器？");
     messageBox.setInformativeText(
-        "配置引导将协助你选择协议、填写服务器地址并选择认证方式。"
+        "配置引导将协助你选择协议、填写服务器地址、认证方式和登录凭据。"
     );
 
     QPushButton *startButton = messageBox.addButton(
