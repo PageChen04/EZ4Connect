@@ -4,9 +4,11 @@
 #include <QDebug>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QSettings>
 #include <QUrlQuery>
 #include <QVBoxLayout>
@@ -51,6 +53,88 @@ void AuthDialogCoordinator::requestLogin(
     connect(loginWindow, &LoginWindow::login, this,
             &AuthDialogCoordinator::loginSubmitted);
     loginWindow->show();
+}
+
+void AuthDialogCoordinator::requestPhoneNumber(
+    const QString &countryCode,
+    const QString &phoneNumber
+)
+{
+    if (phoneNumberDialog != nullptr)
+    {
+        phoneNumberDialog->raise();
+        phoneNumberDialog->activateWindow();
+        return;
+    }
+
+    auto *dialog = new QDialog(parentWidget);
+    phoneNumberDialog = dialog;
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setWindowTitle("短信验证");
+
+    auto *layout = new QVBoxLayout(dialog);
+    layout->addWidget(new QLabel("请输入接收验证码的手机号码：", dialog));
+
+    auto *phoneLayout = new QHBoxLayout;
+    phoneLayout->addWidget(new QLabel("+", dialog));
+    auto *countryCodeEdit = new QLineEdit(countryCode, dialog);
+    countryCodeEdit->setObjectName("countryCodeLineEdit");
+    countryCodeEdit->setMaximumWidth(60);
+    countryCodeEdit->setPlaceholderText("国家码");
+    phoneLayout->addWidget(countryCodeEdit);
+    phoneLayout->addWidget(new QLabel("-", dialog));
+    auto *phoneNumberEdit = new QLineEdit(phoneNumber, dialog);
+    phoneNumberEdit->setObjectName("phoneNumberLineEdit");
+    phoneNumberEdit->setPlaceholderText("手机号码");
+    phoneLayout->addWidget(phoneNumberEdit);
+    layout->addLayout(phoneLayout);
+
+    auto *saveCheckBox = new QCheckBox("记住手机号码（可在设置中删除）", dialog);
+    layout->addWidget(saveCheckBox);
+
+    auto *buttonBox = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+        dialog
+    );
+    connect(
+        buttonBox,
+        &QDialogButtonBox::accepted,
+        dialog,
+        [this, dialog, countryCodeEdit, phoneNumberEdit, saveCheckBox]()
+        {
+            const QString submittedCountryCode = countryCodeEdit->text().trimmed();
+            const QString submittedPhoneNumber = phoneNumberEdit->text().trimmed();
+            if (submittedCountryCode.isEmpty() || submittedPhoneNumber.isEmpty())
+            {
+                QMessageBox::warning(
+                    dialog,
+                    "警告",
+                    "国家码或手机号码不能为空。"
+                );
+                return;
+            }
+
+            emit phoneNumberSubmitted(
+                submittedCountryCode,
+                submittedPhoneNumber,
+                saveCheckBox->isChecked()
+            );
+            dialog->accept();
+        }
+    );
+    connect(buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
+    layout->addWidget(buttonBox);
+
+    if (phoneNumber.isEmpty())
+    {
+        phoneNumberEdit->setFocus();
+    }
+    else
+    {
+        countryCodeEdit->setFocus();
+    }
+    dialog->show();
 }
 
 void AuthDialogCoordinator::requestSudoPassword()

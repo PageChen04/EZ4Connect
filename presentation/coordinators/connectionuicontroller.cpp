@@ -89,6 +89,35 @@ ConnectionUiController::ConnectionUiController(
         }
     );
     connect(
+        authenticationDialogs,
+        &AuthDialogCoordinator::phoneNumberSubmitted,
+        this,
+        [this](
+            const QString &countryCode,
+            const QString &phoneNumber,
+            bool saveDetails
+        )
+        {
+            if (saveDetails)
+            {
+                settings()->setValue("ZJUConnect/PhoneCountryCode", countryCode);
+                settings()->setValue("ZJUConnect/PhoneNumber", phoneNumber);
+                settings()->sync();
+            }
+
+            const QString username =
+                settings()->value("Credential/Username", "").toString();
+            const QString password = QByteArray::fromBase64(
+                settings()->value("Credential/Password", "").toString().toUtf8()
+            );
+            startConnection(
+                username,
+                password,
+                countryCode + "-" + phoneNumber
+            );
+        }
+    );
+    connect(
         connectionSession,
         &ConnectionSession::reconnectScheduled,
         this,
@@ -201,6 +230,26 @@ void ConnectionUiController::handleConnectClicked()
     const bool passwordLogin =
         (protocol == "atrust" && authType == "psw") ||
         (protocol == "easyconnect" && easyconnectAuthType != "certificate");
+    if (protocol == "atrust" && authType == "smsCheckCode")
+    {
+        QString countryCode = settings()
+            ->value("ZJUConnect/PhoneCountryCode", "86")
+            .toString()
+            .trimmed();
+        const QString phoneNumber = settings()
+            ->value("ZJUConnect/PhoneNumber", "")
+            .toString()
+            .trimmed();
+        if (countryCode.isEmpty() || phoneNumber.isEmpty())
+        {
+            if (countryCode.isEmpty())
+            {
+                countryCode = "86";
+            }
+            authenticationDialogs->requestPhoneNumber(countryCode, phoneNumber);
+            return;
+        }
+    }
     if (passwordLogin && (username.isEmpty() || password.isEmpty()))
     {
         authenticationDialogs->requestLogin(username, password);
@@ -285,7 +334,8 @@ void ConnectionUiController::handleProxyClicked()
 
 void ConnectionUiController::startConnection(
     const QString &username,
-    const QString &password
+    const QString &password,
+    const QString &phone
 )
 {
     ConnectionProfile profile = SettingsProfileLoader::load(
@@ -294,6 +344,10 @@ void ConnectionUiController::startConnection(
         username,
         password
     );
+    if (!phone.isNull())
+    {
+        profile.endpoint.phone = phone;
+    }
     profile.program = CoreExecutable::path();
     const ReconnectPolicy reconnectPolicy{
         settings()->value("Common/AutoReconnect", false).toBool(),
