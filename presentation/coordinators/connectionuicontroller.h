@@ -12,7 +12,6 @@ class QAction;
 class ApplicationLogger;
 class AuthDialogCoordinator;
 class ConnectionSession;
-class CoreLogFile;
 class QPushButton;
 class QSettings;
 class SystemProxySession;
@@ -40,7 +39,6 @@ public:
         SystemProxySession *systemProxySession,
         AuthDialogCoordinator *authenticationDialogs,
         ApplicationLogger *applicationLogger,
-        CoreLogFile *coreLogFile,
         SettingsProvider settingsProvider,
         ProfileIdProvider profileIdProvider,
         NotificationHandler notificationHandler,

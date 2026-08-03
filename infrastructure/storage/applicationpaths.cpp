@@ -43,5 +43,5 @@ QString ApplicationPaths::logFile()
     {
         logDirectory.mkpath(".");
     }
-    return logDirectory.filePath("zjuconnect.log");
+    return logDirectory.filePath("ez4connect.log");
 }

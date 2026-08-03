@@ -8,6 +8,8 @@
 
 #include "application/applicationlogger.h"
 #include "application/applicationconstants.h"
+#include "infrastructure/logging/applicationlogfile.h"
+#include "infrastructure/storage/applicationpaths.h"
 #include "presentation/main/mainwindow.h"
 
 #ifndef PROJ_VER
@@ -22,7 +24,14 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion(PROJ_VER);
     QLocale::setDefault(QLocale(QLocale::Chinese, QLocale::SimplifiedChineseScript, QLocale::China));
 
+    ApplicationLogFile applicationLogFile(ApplicationPaths::logFile());
     ApplicationLogger applicationLogger;
+    QObject::connect(
+        &applicationLogger,
+        &ApplicationLogger::entryAdded,
+        &applicationLogFile,
+        &ApplicationLogFile::appendEntry
+    );
 
 #if defined(Q_OS_WINDOWS)
     QApplication::setFont(QFont("Microsoft YaHei UI", QApplication::font().pointSize()));
@@ -42,7 +51,7 @@ int main(int argc, char *argv[])
     else
         qDebug() << "Failed to load transaction file for" << translateModule;
 
-    MainWindow mainWindow(&applicationLogger);
+    MainWindow mainWindow(&applicationLogger, &applicationLogFile);
 
     QObject::connect(&app, &SingleApplication::aboutToQuit, &mainWindow, &MainWindow::cleanUpWhenQuit);
 
