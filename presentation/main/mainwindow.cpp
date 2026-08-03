@@ -587,20 +587,26 @@ void MainWindow::createProfile()
         return;
     }
 
+    bool ok = false;
+    const QString name = QInputDialog::getText(
+        this,
+        "新建配置",
+        "请输入配置名称：\n（仅支持字母、数字、下划线和连字符）",
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
+    if (!ok)
+    {
+        return;
+    }
+
     if (settingWindow != nullptr)
     {
         settingWindow->close();
     }
 
-    ConfigurationGuideDialog guide(this, settings, true);
-    if (guide.exec() != QDialog::Accepted)
-    {
-        return;
-    }
-
-    const QString newProfileId = profileService->createAndSwitch(
-        guide.profileName()
-    );
+    const QString newProfileId = profileService->createAndSwitch(name);
     if (newProfileId.isEmpty())
     {
         QMessageBox::critical(this, "创建失败", "无法创建新配置。");
@@ -611,11 +617,15 @@ void MainWindow::createProfile()
     currentProfileId = profileService->currentProfileId();
     authenticationDialogs->setSettings(settings);
     upgradeSettings();
-    guide.applyTo(*settings);
     updateVersionInfo();
     resetZjuConnectUi();
     clearLog();
     refreshProfileMenu();
+
+    promptConfigurationGuide(
+        "配置已创建",
+        "配置 \"" + newProfileId + "\" 已创建，是否现在使用配置引导完成设置？"
+    );
 }
 
 void MainWindow::openConfigurationGuide()
@@ -678,18 +688,29 @@ void MainWindow::openConfigurationGuide()
 
 void MainWindow::promptFirstLaunchGuide()
 {
+    promptConfigurationGuide(
+        "欢迎使用 EZ4Connect",
+        "检测到这是首次启动，是否现在配置 VPN 服务器？"
+    );
+}
+
+void MainWindow::promptConfigurationGuide(
+    const QString &windowTitle,
+    const QString &text
+)
+{
     QMessageBox messageBox(this);
-    messageBox.setWindowTitle("欢迎使用 EZ4Connect");
-    messageBox.setText("检测到这是首次启动，是否现在配置 VPN 服务器？");
+    messageBox.setWindowTitle(windowTitle);
+    messageBox.setText(text);
     messageBox.setInformativeText(
         "配置引导将协助你选择协议、填写服务器地址、认证方式和登录凭据。"
     );
 
     QPushButton *startButton = messageBox.addButton(
-        "开始配置",
+        "使用配置引导",
         QMessageBox::AcceptRole
     );
-    messageBox.addButton("稍后再说", QMessageBox::RejectRole);
+    messageBox.addButton("稍后配置", QMessageBox::RejectRole);
     messageBox.setDefaultButton(startButton);
     messageBox.exec();
 
