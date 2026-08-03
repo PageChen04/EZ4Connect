@@ -251,7 +251,7 @@ Line3</string>
     <string>打开日志文件</string>
    </property>
    <property name="toolTip">
-    <string>打开核心程序的日志文件</string>
+    <string>打开应用日志文件</string>
    </property>
   </action>
   <action name="clearClientDataAction">

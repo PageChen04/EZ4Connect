@@ -20,8 +20,8 @@ namespace Ui
 }
 
 class ApplicationLogger;
+class ApplicationLogFile;
 class ConnectionUiController;
-class CoreLogFile;
 class UpdateChecker;
 
 class MainWindow : public QMainWindow
@@ -29,7 +29,11 @@ class MainWindow : public QMainWindow
 Q_OBJECT
 
 public:
-    explicit MainWindow(ApplicationLogger *logger, QWidget *parent = nullptr);
+    explicit MainWindow(
+        ApplicationLogger *logger,
+        ApplicationLogFile *logFile,
+        QWidget *parent = nullptr
+    );
 
     ~MainWindow() override;
 
@@ -98,7 +102,7 @@ private:
     ConnectionUiController *connectionUiController;
     MainWindowCoordinator *coordinator;
     ApplicationLogger *applicationLogger;
-    CoreLogFile *coreLogFile = nullptr;
+    ApplicationLogFile *applicationLogFile;
     UpdateChecker *updateChecker;
     QSettings *settings;
     ProfileService *profileService;

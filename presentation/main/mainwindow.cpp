@@ -17,7 +17,7 @@
 #include "application/commandlineoptions.h"
 #include "application/settingsmigrator.h"
 #include "infrastructure/coreprocess/devicetrust.h"
-#include "infrastructure/logging/corelogfile.h"
+#include "infrastructure/logging/applicationlogfile.h"
 #include "infrastructure/storage/applicationpaths.h"
 #include "infrastructure/update/updatechecker.h"
 #include "presentation/coordinators/connectionuicontroller.h"
@@ -25,10 +25,15 @@
 #include "presentation/presentationhelpers.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
+MainWindow::MainWindow(
+    ApplicationLogger *logger,
+    ApplicationLogFile *logFile,
+    QWidget *parent
+) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    applicationLogger(logger)
+    applicationLogger(logger),
+    applicationLogFile(logFile)
 {
     const QString overrideConfigPath =
         CommandLineOptions::value(QCoreApplication::arguments(), "--config-path");
@@ -45,7 +50,6 @@ MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
     authenticationDialogs = coordinator->authenticationDialogs();
     connectionSession = coordinator->connection();
     systemProxySession = coordinator->systemProxy();
-    coreLogFile = new CoreLogFile(ApplicationPaths::logFile(), this);
     updateChecker = coordinator->updates();
     connect(updateChecker, &UpdateChecker::versionInfoChanged, this,
             [this](const VersionInfo &) { updateVersionInfo(); });
@@ -128,7 +132,7 @@ MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
     connect(ui->openLogAction, &QAction::triggered, this,
             [this]()
             {
-                const QString logFilePath = coreLogFile->filePath();
+                const QString logFilePath = applicationLogFile->filePath();
                 QFileInfo logFileInfo(logFilePath);
 
                 if (logFileInfo.exists())
@@ -280,7 +284,6 @@ MainWindow::MainWindow(ApplicationLogger *logger, QWidget *parent) :
         systemProxySession,
         authenticationDialogs,
         applicationLogger,
-        coreLogFile,
         [this]() { return settings; },
         [this]() { return currentProfileId; },
         [this](

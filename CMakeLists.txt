@@ -53,7 +53,7 @@ set(SOURCE_FILES
     infrastructure/coreprocess/coreoutputbuffer.cpp
     infrastructure/coreprocess/coreoutputparser.cpp
     core/connectionsessionstate.cpp
-    infrastructure/logging/corelogfile.cpp
+    infrastructure/logging/applicationlogfile.cpp
     infrastructure/platform/autostart.cpp
     infrastructure/platform/privileges.cpp
     infrastructure/settings/settingsprofileloader.cpp
@@ -143,13 +143,13 @@ if(BUILD_TESTING)
     target_link_libraries(applicationlogger_test Qt::Core)
     add_test(NAME applicationlogger_test COMMAND applicationlogger_test)
 
-    add_executable(corelogfile_test
-        tests/corelogfile_test.cpp
-        infrastructure/logging/corelogfile.cpp
+    add_executable(applicationlogfile_test
+        tests/applicationlogfile_test.cpp
+        infrastructure/logging/applicationlogfile.cpp
     )
-    target_include_directories(corelogfile_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(corelogfile_test Qt::Core)
-    add_test(NAME corelogfile_test COMMAND corelogfile_test)
+    target_include_directories(applicationlogfile_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(applicationlogfile_test Qt::Core)
+    add_test(NAME applicationlogfile_test COMMAND applicationlogfile_test)
 
     add_executable(corecommandbuilder_test
         tests/corecommandbuilder_test.cpp

@@ -15,7 +15,6 @@
 #include "application/connectionsession.h"
 #include "application/systemproxysession.h"
 #include "infrastructure/coreprocess/coreexecutable.h"
-#include "infrastructure/logging/corelogfile.h"
 #include "infrastructure/platform/privileges.h"
 #include "infrastructure/settings/settingsprofileloader.h"
 #include "presentation/coordinators/authdialogcoordinator.h"
@@ -29,7 +28,6 @@ ConnectionUiController::ConnectionUiController(
     SystemProxySession *systemProxySession,
     AuthDialogCoordinator *authenticationDialogs,
     ApplicationLogger *applicationLogger,
-    CoreLogFile *coreLogFile,
     SettingsProvider settingsProvider,
     ProfileIdProvider profileIdProvider,
     NotificationHandler notificationHandler,
@@ -57,12 +55,6 @@ ConnectionUiController::ConnectionUiController(
         &ConnectionSession::outputRead,
         applicationLogger,
         &ApplicationLogger::appendCoreOutput
-    );
-    connect(
-        connectionSession,
-        &ConnectionSession::outputRead,
-        coreLogFile,
-        &CoreLogFile::appendOutput
     );
     connect(
         connectionSession,
