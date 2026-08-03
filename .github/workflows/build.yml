@@ -28,6 +28,34 @@ env:
   DISPLAY_NAME: 'EZ4Connect'
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: 'linux'
+          target: 'desktop'
+          arch: 'linux_gcc_64'
+          modules: 'qt5compat qtpositioning qtserialport qtwebchannel qtwebengine'
+          cache: 'true'
+          cache-key-prefix: 'install-qt-action-linux_gcc_64'
+
+      - name: Configure tests
+        run: |
+          cmake -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release -S . -B build
+
+      - name: Build tests
+        run: |
+          cmake --build build --config Release --parallel $(nproc)
+
+      - name: Run tests
+        run: |
+          ctest --test-dir build --build-config Release --output-on-failure
+
   build-windows-x64:
     runs-on: windows-latest
     env:
@@ -434,6 +462,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
     needs:
+      - unit-tests
       - build-windows-x64
       - build-windows-arm64
       - build-macos-x64
