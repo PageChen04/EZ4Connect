@@ -52,7 +52,8 @@ proxy-groups:
 
 ```yaml
 rules:
-  - DOMAIN,vpn.hitsz.edu.cn,DIRECT
+  - DOMAIN,ids.hit.edu.cn,DIRECT      # 鉴权服务器
+  - DOMAIN,trust.hitsz.edu.cn,DIRECT  # aTrust 服务器
   - DOMAIN-SUFFIX,hitsz.edu.cn,🏫 校园网
   - IP-CIDR,10.0.0.0/8,🏫 校园网,no-resolve
   # 可在此添加其它你需要代理的 ip 段，如课程中心
@@ -65,8 +66,6 @@ rules:
 </div>
 
 ## TUN 模式
-
-（这里是个坑，没填完的坑）
 
 ### Clash 作为主代理
 
@@ -108,8 +107,8 @@ proxy-groups:
 
 ```yaml
 rules:
-  - DOMAIN,vpn.hitsz.edu.cn,DIRECT
-  - PROCESS-PATH-WILDCARD,*EZ4Connect*,DIRECT
+  - DOMAIN,ids.hit.edu.cn,DIRECT      # 鉴权服务器
+  - DOMAIN,trust.hitsz.edu.cn,DIRECT  # aTrust 服务器
   - PROCESS-NAME,zju-connect.exe,DIRECT
   - PROCESS-NAME,EZ4Connect.exe,DIRECT
   - DOMAIN-SUFFIX,hitsz.edu.cn,🏫 校园网
@@ -118,9 +117,11 @@ rules:
 ```
 
 其中：
-- `PROCESS-PATH-WILDCARD`匹配路径中包含 EZ4Connect 的所有进程流量（主要用于匹配整个安装路径，如果安装文件夹名不同，可根据自身情况修改）；
+
 - `PROCESS-NAME`精确匹配`EZ4Connect.exe`和`zju-connect.exe`联网核心进程；
 - 上述两类规则在可以正确匹配的情况下选其一或保留两者均可，推荐使用`PROCESS-NAME`。并且**必须**至少放在`DOMAIN-SUFFIX,hitsz.edu.cn,🏫 校园网`之前，以达到放行流量，防止回环的目的。
+- 在较新版本的 EZ4Connect 中，可以通过设置“自动检测网口“来避免回环，此时可以不使用`PROCESS-NAME`规则。
+
 
 最后，还需要在 DNS 配置中为`fake-ip`添加过滤规则，防止 EZ4Connect 的域名解析到 fake-ip 地址，从而无法正确分流。
 
@@ -168,8 +169,7 @@ function main(config, profileName) {
 	});
 
 	config.rules.unshift(
-		"DOMAIN,vpn.hitsz.edu.cn,DIRECT",
-		"PROCESS-PATH-WILDCARD,*EZ4Connect*,DIRECT",
+		"DOMAIN,trust.hitsz.edu.cn,DIRECT",
 		"PROCESS-NAME,zju-connect.exe,DIRECT",
 		"PROCESS-NAME,EZ4Connect.exe,DIRECT",
 		"DOMAIN-SUFFIX,hitsz.edu.cn, 校园网",
