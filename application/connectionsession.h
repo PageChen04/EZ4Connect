@@ -18,6 +18,7 @@ public:
     bool start(const ConnectionProfile &profile, const ReconnectPolicy &policy);
     void stop();
     void submitInput(const QByteArray &data);
+    void cancelInteractiveInput();
     void submitSudoPassword(const QString &password, bool remember);
 
     ConnectionState state() const;

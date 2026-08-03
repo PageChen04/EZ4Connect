@@ -37,7 +37,6 @@ void GraphCaptchaWindow::setGraph(const QString &graphFile, bool useTextInput)
         graph.loadFromData(imageFile.readAll());
     }
     ui->canvas->setImage(graph);
-    ui->canvas->setFixedSize(graph.size());
     ui->canvas->setEnabled(!textInputMode);
     ui->codeLabel->setVisible(textInputMode);
     ui->codeEdit->setVisible(textInputMode);
