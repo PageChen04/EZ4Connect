@@ -71,6 +71,7 @@ bool recognizesInteractivePromptsBeforeNewline()
         "Please enter the SMS verification code: ",
         "Please enter your SMS code:",
         "Please enter your TOTP code:",
+        "Please enter rand code:",
         "Please enter the callback url:",
     };
     for (const QByteArray &prompt : prompts)
@@ -84,6 +85,14 @@ bool recognizesInteractivePromptsBeforeNewline()
 
     return !CoreOutputParser::hasInteractivePrompt("ordinary partial output");
 }
+
+bool extractsGraphCaptchaFileFromCoreOutput()
+{
+    return CoreOutputParser::graphCaptchaFile(
+               "2026/08/02 Graph check code saved to C:\\Users\\alice\\graph_code.jpg"
+           ) == "C:\\Users\\alice\\graph_code.jpg"
+        && CoreOutputParser::graphCaptchaFile("ordinary output").isEmpty();
+}
 }
 
 int main(int argc, char *argv[])
@@ -92,6 +101,7 @@ int main(int argc, char *argv[])
     return recognizesCoreProtocol()
                && preservesExistingFirstMatchPrecedence()
                && recognizesInteractivePromptsBeforeNewline()
+               && extractsGraphCaptchaFileFromCoreOutput()
            ? 0
            : 1;
 }

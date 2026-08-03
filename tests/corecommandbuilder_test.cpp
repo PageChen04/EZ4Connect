@@ -28,6 +28,21 @@ bool buildsMinimalCommand()
         && expectEqual(command.loggableArguments, command.arguments, "minimalCommandIsLoggable");
 }
 
+bool addsGraphCaptchaFileForEasyConnect()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "easyconnect";
+
+    CoreRuntimePaths runtimePaths;
+    runtimePaths.graphCodeFile = "/tmp/easyconnect-graph.jpg";
+    const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
+    return expectEqual(
+        command.arguments,
+        {"-protocol", "easyconnect", "-graph-code-file", "/tmp/easyconnect-graph.jpg"},
+        "addsGraphCaptchaFileForEasyConnect"
+    );
+}
+
 bool buildsCompleteCommandInCompatibleOrder()
 {
     ConnectionProfile profile;
@@ -115,6 +130,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     const bool passed = buildsMinimalCommand()
+        && addsGraphCaptchaFileForEasyConnect()
         && buildsCompleteCommandInCompatibleOrder()
         && excludesCredentialsFromLoggableArguments();
     return passed ? 0 : 1;

@@ -32,6 +32,8 @@ public:
     static CoreOutputEvent parse(const QString &output);
 
     static bool hasInteractivePrompt(const QByteArray &output);
+
+    static QString graphCaptchaFile(const QString &output);
 };
 
 #endif // COREOUTPUTPARSER_H

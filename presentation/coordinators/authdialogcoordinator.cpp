@@ -161,9 +161,11 @@ void AuthDialogCoordinator::requestSudoPassword()
 void AuthDialogCoordinator::requestGraphCaptcha(const QString &graphFile)
 {
     qInfo().noquote() << "需要图形验证码";
+    const bool textInputMode = settings == nullptr
+        || settings->value("ZJUConnect/Protocol", "easyconnect").toString() == "easyconnect";
     if (graphCaptchaWindow != nullptr)
     {
-        graphCaptchaWindow->setGraph(graphFile);
+        graphCaptchaWindow->setGraph(graphFile, textInputMode);
         graphCaptchaWindow->raise();
         graphCaptchaWindow->activateWindow();
         return;
@@ -171,12 +173,18 @@ void AuthDialogCoordinator::requestGraphCaptcha(const QString &graphFile)
 
     graphCaptchaWindow = new GraphCaptchaWindow(parentWidget);
     graphCaptchaWindow->setAttribute(Qt::WA_DeleteOnClose);
-    graphCaptchaWindow->setGraph(graphFile);
+    graphCaptchaWindow->setGraph(graphFile, textInputMode);
     connect(graphCaptchaWindow, &GraphCaptchaWindow::finishCaptcha, this,
             [this](const QByteArray &captcha)
             {
                 qInfo().noquote() << "图形验证码已提交";
                 emit interactiveInputSubmitted(captcha + "\n");
+            });
+    connect(graphCaptchaWindow, &GraphCaptchaWindow::cancelled, this,
+            [this]()
+            {
+                qInfo().noquote() << "图形验证码输入已取消";
+                emit interactiveInputCancelled();
             });
     graphCaptchaWindow->show();
 }
