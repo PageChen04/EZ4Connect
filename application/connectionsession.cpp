@@ -75,6 +75,12 @@ void ConnectionSession::submitInput(const QByteArray &data)
     coreProcess->writeInput(data);
 }
 
+void ConnectionSession::cancelInteractiveInput()
+{
+    submitInput("\r\n");
+    stop();
+}
+
 void ConnectionSession::submitSudoPassword(const QString &password, bool remember)
 {
     if (password.isEmpty())

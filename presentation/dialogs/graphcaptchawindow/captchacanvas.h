@@ -38,6 +38,8 @@ protected:
     void mousePressEvent(QMouseEvent *ev) override;
 
 private:
+    QRectF imageRect() const;
+
     QPixmap m_img;
     QVector<QPointF> m_pointsPx;
     int m_maxPoints = -1;

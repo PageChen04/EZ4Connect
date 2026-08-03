@@ -80,7 +80,7 @@ MainWindowCoordinator::MainWindowCoordinator(
         authenticationCoordinator,
         &AuthDialogCoordinator::interactiveInputCancelled,
         connectionSession,
-        &ConnectionSession::stop
+        &ConnectionSession::cancelInteractiveInput
     );
 
     connect(
