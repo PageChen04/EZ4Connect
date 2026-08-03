@@ -1,16 +1,15 @@
 #include "captchacanvas.h"
 
-#include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QPushButton>
-#include <QVBoxLayout>
+#include <QSizePolicy>
 
 CaptchaCanvas::CaptchaCanvas(QWidget *parent) : QWidget(parent)
 {
     setMouseTracking(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
     setAutoFillBackground(false);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void CaptchaCanvas::setImage(const QPixmap &pm)
@@ -43,9 +42,12 @@ void CaptchaCanvas::undoLast()
 void CaptchaCanvas::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
+    p.fillRect(rect(), palette().window());
     p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    const QRectF target = imageRect();
     if (!m_img.isNull())
-        p.drawPixmap(0, 0, m_img);
+        p.drawPixmap(target, m_img, QRectF(m_img.rect()));
 
     QPen blackPen;
     blackPen.setWidth(2);
@@ -61,7 +63,9 @@ void CaptchaCanvas::paintEvent(QPaintEvent *)
 
     for (int i = 0; i < m_pointsPx.size(); ++i)
     {
-        const QPointF pt = m_pointsPx[i];
+        const QPointF imagePoint = m_pointsPx[i];
+        const QPointF pt(target.left() + imagePoint.x() * target.width() / m_img.width(),
+                         target.top() + imagePoint.y() * target.height() / m_img.height());
         p.drawEllipse(pt, 8, 8);
         p.drawText(QRectF(pt - QPointF(6, 6), pt + QPointF(6, 6)), QString::number(i + 1),
                    QTextOption(Qt::AlignCenter));
@@ -73,14 +77,28 @@ void CaptchaCanvas::mousePressEvent(QMouseEvent *ev)
     const QPointF pos = ev->position();
     if (ev->button() == Qt::LeftButton && !m_img.isNull())
     {
-        if (QRectF(QPointF(0, 0), m_img.size()).contains(pos))
+        const QRectF target = imageRect();
+        if (target.contains(pos))
         {
             if (m_maxPoints < 0 || m_pointsPx.size() < m_maxPoints)
             {
-                m_pointsPx.push_back(pos);
+                m_pointsPx.push_back(QPointF((pos.x() - target.left()) * m_img.width() / target.width(),
+                                             (pos.y() - target.top()) * m_img.height() / target.height()));
                 update();
                 emit pointCountChanged(m_pointsPx.size());
             }
         }
     }
+}
+
+QRectF CaptchaCanvas::imageRect() const
+{
+    if (m_img.isNull() || width() <= 0 || height() <= 0)
+        return {};
+
+    QSizeF scaledSize = m_img.size();
+    scaledSize.scale(size(), Qt::KeepAspectRatio);
+    return QRectF(QPointF((width() - scaledSize.width()) / 2.0,
+                          (height() - scaledSize.height()) / 2.0),
+                  scaledSize);
 }

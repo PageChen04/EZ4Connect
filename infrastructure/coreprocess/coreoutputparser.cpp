@@ -26,7 +26,8 @@ CoreOutputEvent CoreOutputParser::parse(const QString &output)
     {
         return CoreOutputEvent::SsoCallback;
     }
-    if (output.contains("graph check code still required after second login attempt"))
+    if (output.contains("graph check code still required after second login attempt") ||
+        output.contains("The characters are incorrect or has expired!"))
     {
         return CoreOutputEvent::CaptchaFailed;
     }

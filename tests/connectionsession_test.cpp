@@ -104,11 +104,35 @@ bool emptySudoPasswordStopsTheSession()
     }
     return true;
 }
+
+bool cancelledInteractiveInputSubmitsNewlineBeforeStopping()
+{
+    auto *coreProcess = new FakeCoreProcess();
+    ConnectionSession session(coreProcess);
+    ConnectionProfile profile;
+
+    if (!session.start(profile, {}))
+    {
+        qCritical() << "failed to start session for interactive input cancellation";
+        return false;
+    }
+
+    session.cancelInteractiveInput();
+    if (coreProcess->lastInput != "\r\n"
+        || coreProcess->stopCalls != 1
+        || session.state() != ConnectionState::Stopping)
+    {
+        qCritical() << "interactive input cancellation did not submit a newline and stop";
+        return false;
+    }
+    return true;
+}
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication application(argc, argv);
     return delegatesProcessLifecycleThroughPort()
-        && emptySudoPasswordStopsTheSession() ? 0 : 1;
+        && emptySudoPasswordStopsTheSession()
+        && cancelledInteractiveInputSubmitsNewlineBeforeStopping() ? 0 : 1;
 }
