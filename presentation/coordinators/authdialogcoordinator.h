@@ -44,6 +44,7 @@ signals:
     );
     void sudoPasswordSubmitted(const QString &password, bool remember);
     void interactiveInputSubmitted(const QByteArray &input);
+    void interactiveInputCancelled();
 
 private:
     QWidget *parentWidget;

@@ -90,7 +90,7 @@ void ZjuConnectProcess::processOutputLines(const QList<QByteArray> &lines)
             emit askSudoPass();
             break;
         case CoreOutputEvent::GraphCaptcha:
-            emit graphCaptcha(graphFile);
+            emit graphCaptcha(CoreOutputParser::graphCaptchaFile(line));
             break;
         case CoreOutputEvent::SmsCodeWithSkipOption:
             emit smsCode(true);
@@ -191,16 +191,17 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
 {
     CoreRuntimePaths runtimePaths;
 
+    // Both protocols can require a graph captcha. The UI chooses the response
+    // format according to the active protocol.
+    if (tempDir == nullptr)
+    {
+        tempDir = new QTemporaryDir;
+        tempDir->setAutoRemove(true);
+    }
+    runtimePaths.graphCodeFile = tempDir->filePath("graph.jpg");
+
     if (profile.endpoint.protocol == "atrust")
     {
-        // 图形验证码文件路径
-        if (tempDir == nullptr)
-        {
-            tempDir = new QTemporaryDir;
-            tempDir->setAutoRemove(true);
-        }
-        graphFile = tempDir->filePath("graph.jpg");
-        runtimePaths.graphCodeFile = graphFile;
         runtimePaths.clientDataFile = ApplicationPaths::clientDataFile(profile.profileId);
     }
 

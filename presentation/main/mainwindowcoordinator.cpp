@@ -76,6 +76,12 @@ MainWindowCoordinator::MainWindowCoordinator(
         connectionSession,
         &ConnectionSession::submitInput
     );
+    connect(
+        authenticationCoordinator,
+        &AuthDialogCoordinator::interactiveInputCancelled,
+        connectionSession,
+        &ConnectionSession::stop
+    );
 
     connect(
         systemProxySession,

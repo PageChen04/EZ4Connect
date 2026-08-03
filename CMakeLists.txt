@@ -261,4 +261,16 @@ if(BUILD_TESTING)
     set_tests_properties(configurationguidedialog_test PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
     )
+
+    add_executable(graphcaptchawindow_test
+        tests/graphcaptchawindow_test.cpp
+        presentation/dialogs/graphcaptchawindow/graphcaptchawindow.cpp
+        presentation/dialogs/graphcaptchawindow/captchacanvas.cpp
+    )
+    target_include_directories(graphcaptchawindow_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(graphcaptchawindow_test Qt::Core Qt::Gui Qt::Widgets)
+    add_test(NAME graphcaptchawindow_test COMMAND graphcaptchawindow_test)
+    set_tests_properties(graphcaptchawindow_test PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()

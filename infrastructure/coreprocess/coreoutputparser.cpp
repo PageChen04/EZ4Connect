@@ -73,11 +73,24 @@ CoreOutputEvent CoreOutputParser::parse(const QString &output)
     return CoreOutputEvent::None;
 }
 
+QString CoreOutputParser::graphCaptchaFile(const QString &output)
+{
+    const QString prefix = "Graph check code saved to ";
+    const qsizetype markerIndex = output.indexOf(prefix);
+    if (markerIndex < 0)
+    {
+        return {};
+    }
+
+    return output.mid(markerIndex + prefix.size()).trimmed();
+}
+
 bool CoreOutputParser::hasInteractivePrompt(const QByteArray &output)
 {
     return output.contains("SUDO_ASK_PASS")
            || output.contains("Please enter the SMS verification code: ")
            || output.contains("Please enter your SMS code:")
            || output.contains("Please enter your TOTP code:")
+           || output.contains("Please enter rand code:")
            || output.contains("Please enter the callback url:");
 }

@@ -11,11 +11,25 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>验证码</string>
+   <string>图形验证码</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="CaptchaCanvas" name="canvas"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="codeLabel">
+     <property name="text">
+      <string>请输入图片中的字符验证码：</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="codeEdit">
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

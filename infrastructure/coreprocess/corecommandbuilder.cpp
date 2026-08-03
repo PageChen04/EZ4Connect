@@ -21,9 +21,9 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
         arguments << "-auth-type" << "auth/" + profile.endpoint.authType;
     }
 
+    appendOption(arguments, "-graph-code-file", runtimePaths.graphCodeFile);
     if (profile.endpoint.protocol == "atrust")
     {
-        appendOption(arguments, "-graph-code-file", runtimePaths.graphCodeFile);
         appendOption(arguments, "-client-data-file", runtimePaths.clientDataFile);
     }
 

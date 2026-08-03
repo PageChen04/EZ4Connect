@@ -14,12 +14,18 @@ public:
 
     ~GraphCaptchaWindow() override;
 
-    void setGraph(const QString &graphFile);
+    void setGraph(const QString &graphFile, bool textInputMode);
 
 signals:
     void finishCaptcha(const QByteArray &captcha);
+    void cancelled();
+
+public slots:
+    void accept() override;
+    void reject() override;
 
 private:
     Ui::GraphCaptchaWindow *ui;
     MainWindow *mainWindow = nullptr;
+    bool textInputMode = false;
 };

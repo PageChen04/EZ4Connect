@@ -32,8 +32,6 @@ private:
 
     QTemporaryDir *tempDir = nullptr;
 
-    QString graphFile;
-
     CoreOutputBuffer standardOutputBuffer;
     CoreOutputBuffer standardErrorBuffer;
     bool stopRequested = false;
