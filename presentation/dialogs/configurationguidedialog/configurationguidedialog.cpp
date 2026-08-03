@@ -12,7 +12,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
 #include <QSpinBox>
@@ -38,14 +37,12 @@ QString normalizedAuthType(const QString &authType)
 
 ConfigurationGuideDialog::ConfigurationGuideDialog(
     QWidget *parent,
-    const QSettings *settings,
-    bool requestProfileName
+    const QSettings *settings
 )
     : QDialog(parent),
-      sourceSettings(settings),
-      requestProfileName(requestProfileName)
+      sourceSettings(settings)
 {
-    setWindowTitle(requestProfileName ? "新建配置" : "配置引导");
+    setWindowTitle("配置引导");
     setWindowModality(Qt::WindowModal);
     setMinimumSize(520, 340);
 
@@ -67,7 +64,7 @@ ConfigurationGuideDialog::ConfigurationGuideDialog(
 
     pages = new QStackedWidget(this);
     pages->addWidget(createProtocolPage());
-    pages->addWidget(createServerPage(requestProfileName));
+    pages->addWidget(createServerPage());
     pages->addWidget(createAuthenticationPage());
     pages->addWidget(createCredentialsPage());
     layout->addWidget(pages, 1);
@@ -146,11 +143,6 @@ ConfigurationGuideDialog::ConfigurationGuideDialog(
     updateNavigation();
 }
 
-QString ConfigurationGuideDialog::profileName() const
-{
-    return profileNameLineEdit->text().trimmed();
-}
-
 void ConfigurationGuideDialog::applyTo(QSettings &settings) const
 {
     settings.setValue(
@@ -207,19 +199,12 @@ void ConfigurationGuideDialog::applyTo(QSettings &settings) const
     settings.sync();
 }
 
-QWidget *ConfigurationGuideDialog::createServerPage(bool showProfileName)
+QWidget *ConfigurationGuideDialog::createServerPage()
 {
     auto *page = new QWidget(this);
     auto *pageLayout = new QVBoxLayout(page);
     auto *formLayout = new QFormLayout();
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-
-    profileNameLabel = new QLabel("配置名称", page);
-    profileNameLineEdit = new QLineEdit(page);
-    profileNameLineEdit->setPlaceholderText("例如：school_vpn");
-    profileNameLabel->setVisible(showProfileName);
-    profileNameLineEdit->setVisible(showProfileName);
-    formLayout->addRow(profileNameLabel, profileNameLineEdit);
 
     serverAddressLineEdit = new QLineEdit(page);
     serverAddressLineEdit->setPlaceholderText("例如：vpn.example.edu.cn");
@@ -640,21 +625,6 @@ bool ConfigurationGuideDialog::validateCurrentPage()
 {
     if (pages->currentIndex() == 1)
     {
-        if (requestProfileName)
-        {
-            const QString name = profileName();
-            const QRegularExpression validName("^[a-zA-Z0-9_-]+$");
-            if (!validName.match(name).hasMatch())
-            {
-                QMessageBox::warning(
-                    this,
-                    "配置名称无效",
-                    "配置名称仅支持字母、数字、下划线和连字符。"
-                );
-                return false;
-            }
-        }
-
         if (serverAddressLineEdit->text().trimmed().isEmpty())
         {
             QMessageBox::warning(this, "服务器地址无效", "服务器地址不能为空。");

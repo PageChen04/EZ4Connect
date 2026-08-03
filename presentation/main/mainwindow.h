@@ -69,6 +69,11 @@ private:
 
     void openConfigurationGuide();
 
+    void promptConfigurationGuide(
+        const QString &windowTitle,
+        const QString &text
+    );
+
     void promptFirstLaunchGuide();
 
     void renameCurrentProfile();

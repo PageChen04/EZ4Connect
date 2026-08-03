@@ -20,11 +20,8 @@ class ConfigurationGuideDialog : public QDialog
 public:
     explicit ConfigurationGuideDialog(
         QWidget *parent,
-        const QSettings *settings,
-        bool requestProfileName = false
+        const QSettings *settings
     );
-
-    QString profileName() const;
 
     void applyTo(QSettings &settings) const;
 
@@ -38,7 +35,7 @@ private slots:
     void fetchAuthenticationMethods();
 
 private:
-    QWidget *createServerPage(bool requestProfileName);
+    QWidget *createServerPage();
 
     QWidget *createProtocolPage();
 
@@ -63,7 +60,6 @@ private:
     QString authenticationMethodName(const QString &authType) const;
 
     const QSettings *sourceSettings;
-    bool requestProfileName;
 
     QLabel *stepLabel;
     QLabel *titleLabel;
@@ -72,8 +68,6 @@ private:
     QPushButton *backButton;
     QPushButton *nextButton;
 
-    QLabel *profileNameLabel;
-    QLineEdit *profileNameLineEdit;
     QLineEdit *serverAddressLineEdit;
     QSpinBox *serverPortSpinBox;
 
