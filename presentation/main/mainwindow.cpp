@@ -903,5 +903,10 @@ void MainWindow::gracefullyQuit()
 
 MainWindow::~MainWindow()
 {
+    delete coordinator;
+    coordinator = nullptr;
+
+    QObject::disconnect(applicationLogger, nullptr, this, nullptr);
     delete ui;
+    ui = nullptr;
 }
