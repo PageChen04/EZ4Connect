@@ -4,10 +4,15 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDebug>
+#include <QFile>
 #include <QFileInfo>
+#include <QFontDatabase>
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QActionGroup>
 #include <QInputDialog>
+#include <QStyle>
+#include <QStyleHints>
 #include <QTimer>
 
 #include "mainwindow.h"
@@ -24,6 +29,23 @@
 #include "presentation/dialogs/configurationguidedialog/configurationguidedialog.h"
 #include "presentation/presentationhelpers.h"
 #include "ui_mainwindow.h"
+
+namespace
+{
+bool appendStyleSheet(const QString &path, QString &styleSheet)
+{
+    QFile styleFile(path);
+    if (!styleFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qWarning().noquote() << "无法加载样式资源：" << path;
+        return false;
+    }
+
+    styleSheet.append(QString::fromUtf8(styleFile.readAll()));
+    styleSheet.append('\n');
+    return true;
+}
+}
 
 MainWindow::MainWindow(
     ApplicationLogger *logger,
@@ -47,6 +69,13 @@ MainWindow::MainWindow(
     upgradeSettings();
 
     ui->setupUi(this);
+    ui->logPlainTextEdit->setFont(
+        QFontDatabase::systemFont(QFontDatabase::FixedFont)
+    );
+    QStyleHints *styleHints = QGuiApplication::styleHints();
+    applyColorScheme(styleHints->colorScheme());
+    connect(styleHints, &QStyleHints::colorSchemeChanged,
+            this, &MainWindow::applyColorScheme);
     authenticationDialogs = coordinator->authenticationDialogs();
     connectionSession = coordinator->connection();
     systemProxySession = coordinator->systemProxy();
@@ -58,9 +87,9 @@ MainWindow::MainWindow(
             {
                 const QString componentName =
                     component == UpdateComponent::Ui ? QStringLiteral("UI") : QStringLiteral("核心");
-                ui->versionLabel->setText(
-                    "当前版本：" + QApplication::applicationVersion() +
-                    "\n检查" + componentName + "更新失败\n"
+                ui->versionLabel->setToolTip(
+                    ui->versionLabel->toolTip()
+                    + "\n检查" + componentName + "更新失败"
                 );
             });
     connect(updateChecker, &UpdateChecker::uiUpdateAvailable, this,
@@ -104,6 +133,8 @@ MainWindow::MainWindow(
                 {
                     ui->pushButton2->hide();
                 }
+                updateProfileSummary();
+                updateConnectionState(connectionSession->state());
             });
     setupTrayIcon();
     setupProfileMenu();
@@ -115,6 +146,10 @@ MainWindow::MainWindow(
     ui->applicationNameLabel->setText(QApplication::applicationDisplayName());
 
     updateVersionInfo();
+    updateConnectionState(connectionSession->state());
+
+    connect(connectionSession, &ConnectionSession::stateChanged, this,
+            &MainWindow::updateConnectionState);
 
 
     // 文件-退出
@@ -127,6 +162,13 @@ MainWindow::MainWindow(
                 settingWindow = new SettingWindow(this, settings, currentProfileId);
                 settingWindow->show();
             });
+
+    connect(ui->settingPushButton, &QPushButton::clicked,
+            ui->settingAction, &QAction::trigger);
+    connect(ui->guidePushButton, &QPushButton::clicked,
+            ui->configurationGuideAction, &QAction::trigger);
+    connect(ui->openLogPushButton, &QPushButton::clicked,
+            ui->openLogAction, &QAction::trigger);
 
     // 文件-打开日志文件
     connect(ui->openLogAction, &QAction::triggered, this,
@@ -380,6 +422,110 @@ void MainWindow::resetZjuConnectUi()
     trayConnectAction->setText("连接服务器");
     ui->pushButton2->setText("设置系统代理");
     ui->pushButton2->hide();
+    updateConnectionState(ConnectionState::Disconnected);
+    updateProfileSummary();
+}
+
+void MainWindow::applyColorScheme(Qt::ColorScheme scheme)
+{
+    const QString themePath = scheme == Qt::ColorScheme::Dark
+        ? QStringLiteral(":/resource/mainwindow-dark.qss")
+        : QStringLiteral(":/resource/mainwindow-light.qss");
+
+    QString styleSheet;
+    if (!appendStyleSheet(QStringLiteral(":/resource/mainwindow.qss"), styleSheet)
+        || !appendStyleSheet(themePath, styleSheet))
+    {
+        return;
+    }
+
+    setStyleSheet(styleSheet);
+}
+
+void MainWindow::updateConnectionState(ConnectionState state)
+{
+    QString propertyValue;
+    QString title;
+    QString detail;
+
+    switch (state)
+    {
+    case ConnectionState::Disconnected:
+        propertyValue = "disconnected";
+        title = "尚未连接";
+        detail = "连接后即可访问校园网络资源。";
+        break;
+    case ConnectionState::Starting:
+        propertyValue = "starting";
+        title = "正在连接";
+        detail = "正在启动核心并建立安全通道。";
+        break;
+    case ConnectionState::Running:
+        propertyValue = "running";
+        title = "已连接";
+        detail = systemProxySession->isEnabled()
+            ? "VPN 通道与系统代理均已启用。"
+            : "VPN 通道运行中，可按需启用系统代理。";
+        break;
+    case ConnectionState::Stopping:
+        propertyValue = "stopping";
+        title = "正在断开";
+        detail = "正在安全关闭当前连接。";
+        break;
+    case ConnectionState::Reconnecting:
+        propertyValue = "reconnecting";
+        title = "正在重连";
+        detail = "连接中断，正在按当前策略重新尝试。";
+        break;
+    case ConnectionState::Failed:
+        propertyValue = "failed";
+        title = "连接失败";
+        detail = "请查看右侧日志，确认网络与账户配置。";
+        break;
+    }
+
+    ui->statusTitleLabel->setText(title);
+    ui->statusDetailLabel->setText(detail);
+
+    const QList<QWidget *> styledWidgets{
+        ui->statusIndicator,
+        ui->pushButton1
+    };
+    for (QWidget *widget : styledWidgets)
+    {
+        widget->setProperty("connectionState", propertyValue);
+        widget->style()->unpolish(widget);
+        widget->style()->polish(widget);
+        widget->update();
+    }
+}
+
+void MainWindow::updateProfileSummary()
+{
+    const QString profileName = currentProfileId.isEmpty()
+        ? QStringLiteral("默认")
+        : currentProfileId;
+    const QString protocolSetting = settings->value(
+        "ZJUConnect/Protocol",
+        "easyconnect"
+    ).toString();
+    const QString protocol = protocolSetting.compare(
+        "atrust",
+        Qt::CaseInsensitive
+    ) == 0 ? QStringLiteral("aTrust") : QStringLiteral("EasyConnect");
+    const QString server = settings->value(
+        "ZJUConnect/ServerAddress"
+    ).toString().trimmed();
+
+    QStringList details{protocol};
+    details.append(server.isEmpty() ? QStringLiteral("尚未配置服务器") : server);
+    if (systemProxySession != nullptr && systemProxySession->isEnabled())
+    {
+        details.append(QStringLiteral("系统代理已启用"));
+    }
+
+    ui->profileNameLabel->setText(profileName);
+    ui->profileDetailLabel->setText(details.join(QStringLiteral(" · ")));
 }
 
 void MainWindow::setupTrayIcon()
@@ -622,6 +768,7 @@ void MainWindow::createProfile()
     upgradeSettings();
     updateVersionInfo();
     resetZjuConnectUi();
+    updateVersionInfo();
     clearLog();
     refreshProfileMenu();
 
@@ -844,11 +991,12 @@ void MainWindow::upgradeSettings()
 void MainWindow::updateVersionInfo()
 {
     const VersionInfo &versionInfo = updateChecker->versionInfo();
-	ui->versionLabel->setText(
-		"UI 版本：" + versionInfo.uiVersion + " 最新：" + versionInfo.uiLatest + "\n"
-		"核心版本：" + versionInfo.coreVersion + " 最新：" + versionInfo.coreLatest + "\n"
-        "当前配置：" + (currentProfileId.isEmpty() ? "默认" : currentProfileId)
-	);
+    ui->versionLabel->setText("版本 " + versionInfo.uiVersion);
+    ui->versionLabel->setToolTip(
+        "UI 版本：" + versionInfo.uiVersion + "（最新：" + versionInfo.uiLatest + "）\n"
+        "核心版本：" + versionInfo.coreVersion + "（最新：" + versionInfo.coreLatest + "）"
+    );
+    updateProfileSummary();
 }
 
 void MainWindow::showNotification(const QString &title, const QString &content, QSystemTrayIcon::MessageIcon icon)

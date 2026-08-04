@@ -1,0 +1,204 @@
+QMainWindow {
+    background: #141b20;
+}
+
+QLabel,
+QPlainTextEdit,
+QMenuBar,
+QMenu {
+    color: #e6edf1;
+}
+
+QMenuBar {
+    background: #141b20;
+    border-bottom-color: #2d3a42;
+}
+
+QMenuBar::item:selected {
+    background: #24323a;
+}
+
+QMenu {
+    background: #1d272d;
+    border-color: #354650;
+}
+
+QMenu::item:selected {
+    background: #243f4d;
+    color: #9fdcff;
+}
+
+#applicationNameLabel {
+    color: #f0f5f7;
+}
+
+#applicationSubtitleLabel,
+#logSubtitleLabel,
+#logHintLabel,
+#supportLabel {
+    color: #9eafb9;
+}
+
+#versionLabel {
+    background: #26333b;
+    color: #bdcbd3;
+}
+
+#controlPanel,
+#logPanel {
+    background: #1c252b;
+    border-color: #30404a;
+}
+
+#connectionEyebrowLabel,
+#profileEyebrowLabel {
+    color: #a4b4bd;
+}
+
+#statusTitleLabel,
+#profileNameLabel,
+#logTitleLabel {
+    color: #edf3f6;
+}
+
+#statusDetailLabel,
+#profileDetailLabel,
+#qqGroupLabel {
+    color: #acbac2;
+}
+
+#statusIndicator {
+    background: #71838e;
+}
+
+#statusIndicator[connectionState="starting"],
+#statusIndicator[connectionState="reconnecting"] {
+    background: #dfa24f;
+}
+
+#statusIndicator[connectionState="running"] {
+    background: #55b9e7;
+}
+
+#statusIndicator[connectionState="stopping"] {
+    background: #8b9ca6;
+}
+
+#statusIndicator[connectionState="failed"] {
+    background: #dc7777;
+}
+
+QPushButton#guidePushButton,
+QPushButton#settingPushButton,
+QPushButton#pushButton1,
+QPushButton#pushButton2,
+QPushButton#openLogPushButton,
+QPushButton#copyLogPushButton,
+QPushButton#clearLogPushButton {
+    background: #243038;
+    border-color: #40545f;
+    color: #dfe8ed;
+}
+
+QPushButton#guidePushButton:hover,
+QPushButton#settingPushButton:hover,
+QPushButton#pushButton1:hover,
+QPushButton#pushButton2:hover,
+QPushButton#openLogPushButton:hover,
+QPushButton#copyLogPushButton:hover,
+QPushButton#clearLogPushButton:hover {
+    background: #2b3b44;
+    border-color: #5d7684;
+}
+
+QPushButton#guidePushButton:pressed,
+QPushButton#settingPushButton:pressed,
+QPushButton#pushButton1:pressed,
+QPushButton#pushButton2:pressed,
+QPushButton#openLogPushButton:pressed,
+QPushButton#copyLogPushButton:pressed,
+QPushButton#clearLogPushButton:pressed {
+    background: #192329;
+}
+
+QPushButton#guidePushButton:focus,
+QPushButton#settingPushButton:focus,
+QPushButton#pushButton1:focus,
+QPushButton#pushButton2:focus,
+QPushButton#openLogPushButton:focus,
+QPushButton#copyLogPushButton:focus,
+QPushButton#clearLogPushButton:focus {
+    border-color: #69c4ed;
+}
+
+QPushButton#guidePushButton:disabled,
+QPushButton#settingPushButton:disabled,
+QPushButton#pushButton1:disabled,
+QPushButton#pushButton2:disabled,
+QPushButton#openLogPushButton:disabled,
+QPushButton#copyLogPushButton:disabled,
+QPushButton#clearLogPushButton:disabled {
+    background: #1d272d;
+    border-color: #2f3e46;
+    color: #71818a;
+}
+
+QPushButton#pushButton1 {
+    background: #55b9e7;
+    border-color: #55b9e7;
+    color: #081820;
+}
+
+QPushButton#pushButton1:hover {
+    background: #6bc7ee;
+    border-color: #6bc7ee;
+}
+
+QPushButton#pushButton1:pressed {
+    background: #3aa5d5;
+}
+
+QPushButton#pushButton1[connectionState="running"],
+QPushButton#pushButton1[connectionState="starting"],
+QPushButton#pushButton1[connectionState="reconnecting"] {
+    background: #302626;
+    border-color: #765252;
+    color: #efaaaa;
+}
+
+QPushButton#pushButton1[connectionState="running"]:hover,
+QPushButton#pushButton1[connectionState="starting"]:hover,
+QPushButton#pushButton1[connectionState="reconnecting"]:hover {
+    background: #3a2929;
+    border-color: #a46a6a;
+}
+
+QPushButton#pushButton2 {
+    background: #203744;
+    border-color: #37647a;
+    color: #9fdcff;
+}
+
+#controlDivider {
+    color: #30404a;
+}
+
+#logPlainTextEdit {
+    background: #141c21;
+    border-color: #30404a;
+    color: #dae5ea;
+    selection-background-color: #285b73;
+    selection-color: #f1f7fa;
+}
+
+#logPlainTextEdit:focus {
+    border-color: #5799b8;
+}
+
+QScrollBar::handle:vertical {
+    background: #485b66;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #617784;
+}

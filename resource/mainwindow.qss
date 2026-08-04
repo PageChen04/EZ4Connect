@@ -1,0 +1,144 @@
+QLabel,
+QPlainTextEdit,
+QMenuBar,
+QMenu {
+    font-size: 13px;
+}
+
+QMenuBar {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    padding: 3px 10px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+QMenu {
+    border-width: 1px;
+    border-style: solid;
+    padding: 6px;
+}
+
+QMenu::item {
+    border-radius: 4px;
+    padding: 7px 24px 7px 10px;
+}
+
+#applicationNameLabel {
+    font-size: 21px;
+    font-weight: 600;
+}
+
+#applicationSubtitleLabel,
+#logSubtitleLabel,
+#logHintLabel,
+#supportLabel {
+    font-size: 12px;
+}
+
+#versionLabel {
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+    padding: 4px 6px;
+}
+
+#controlPanel,
+#logPanel {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 7px;
+}
+
+#connectionEyebrowLabel,
+#profileEyebrowLabel {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#statusTitleLabel {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+#profileNameLabel,
+#logTitleLabel {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#statusIndicator {
+    border-radius: 5px;
+}
+
+QPushButton#guidePushButton,
+QPushButton#settingPushButton,
+QPushButton#pushButton1,
+QPushButton#pushButton2,
+QPushButton#openLogPushButton,
+QPushButton#copyLogPushButton,
+QPushButton#clearLogPushButton {
+    min-height: 34px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 14px;
+}
+
+QPushButton#guidePushButton:focus,
+QPushButton#settingPushButton:focus,
+QPushButton#pushButton1:focus,
+QPushButton#pushButton2:focus,
+QPushButton#openLogPushButton:focus,
+QPushButton#copyLogPushButton:focus,
+QPushButton#clearLogPushButton:focus {
+    border-width: 2px;
+}
+
+QPushButton#pushButton1 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#guidePushButton,
+#settingPushButton,
+#copyLogPushButton,
+#clearLogPushButton,
+#openLogPushButton {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+#logPlainTextEdit {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 8px;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    margin: 4px 2px;
+    width: 10px;
+}
+
+QScrollBar::handle:vertical {
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+    height: 0;
+}

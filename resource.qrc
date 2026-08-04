@@ -1,5 +1,8 @@
 <RCC>
     <qresource>
         <file>resource/icon.png</file>
+        <file>resource/mainwindow.qss</file>
+        <file>resource/mainwindow-light.qss</file>
+        <file>resource/mainwindow-dark.qss</file>
     </qresource>
 </RCC>
