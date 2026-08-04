@@ -6,142 +6,442 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>325</height>
+    <width>822</width>
+    <height>583</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>EZ4Connect</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="5">
-     <widget class="QPushButton" name="pushButton2">
-      <property name="text">
-       <string>设置系统代理</string>
+   <layout class="QVBoxLayout" name="pageLayout">
+    <property name="spacing">
+     <number>12</number>
+    </property>
+    <property name="leftMargin">
+     <number>16</number>
+    </property>
+    <property name="topMargin">
+     <number>16</number>
+    </property>
+    <property name="rightMargin">
+     <number>16</number>
+    </property>
+    <property name="bottomMargin">
+     <number>16</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <property name="spacing">
+       <number>12</number>
       </property>
-     </widget>
+      <item>
+       <widget class="QLabel" name="applicationIconLabel">
+        <property name="minimumSize">
+         <size>
+          <width>44</width>
+          <height>44</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>44</width>
+          <height>44</height>
+         </size>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="../../resource.qrc">:/resource/icon.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="brandLayout">
+        <property name="spacing">
+         <number>1</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="applicationNameLabel">
+            <property name="text">
+             <string>EZ4Connect</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="versionLabel">
+            <property name="text">
+             <string>版本 dev</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="applicationSubtitleLabel">
+          <property name="text">
+           <string>支持 aTrust 与 EasyConnect 协议</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="headerSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="guidePushButton">
+        <property name="toolTip">
+         <string>打开配置引导</string>
+        </property>
+        <property name="text">
+         <string>配置引导</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="settingPushButton">
+        <property name="toolTip">
+         <string>打开完整设置</string>
+        </property>
+        <property name="text">
+         <string>设置</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
-    <item row="4" column="3">
-     <widget class="QPushButton" name="pushButton1">
-      <property name="text">
-       <string>连接服务器</string>
+    <item>
+     <layout class="QHBoxLayout" name="workspaceLayout" stretch="0,1">
+      <property name="spacing">
+       <number>12</number>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="0" rowspan="4" colspan="3">
-     <widget class="QPlainTextEdit" name="logPlainTextEdit">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="maximumBlockCount">
-       <number>1000</number>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3" colspan="3">
-     <widget class="QLabel" name="accountLabel">
-      <property name="text">
-       <string>ZJU-Connect 图形界面
-支持 aTrust 和 EasyConnect 协议
-
-如遇问题欢迎加入 QQ 群 1037726410 反馈</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3" colspan="3">
-     <widget class="QLabel" name="versionLabel">
-      <property name="text">
-       <string>Line 1
-Line 2
-Line3</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="4">
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Policy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="3" colspan="3">
-     <widget class="QLabel" name="applicationNameLabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>关注 HITSZ OSA 谢谢喵！n(*≧▽≦*)n</string>
-      </property>
-      <property name="text">
-       <string>EZ4Connect</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="copyLogPushButton">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>复制日志到剪贴板</string>
-      </property>
-      <property name="text">
-       <string>复制日志</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="clearLogPushButton">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>清空窗口中的日志</string>
-      </property>
-      <property name="text">
-       <string>清空日志</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
+      <item>
+       <widget class="QFrame" name="controlPanel">
+        <property name="minimumSize">
+         <size>
+          <width>280</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>336</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <layout class="QVBoxLayout" name="controlLayout">
+         <property name="spacing">
+          <number>12</number>
+         </property>
+         <property name="leftMargin">
+          <number>16</number>
+         </property>
+         <property name="topMargin">
+          <number>16</number>
+         </property>
+         <property name="rightMargin">
+          <number>16</number>
+         </property>
+         <property name="bottomMargin">
+          <number>16</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="connectionEyebrowLabel">
+           <property name="text">
+            <string>VPN 连接</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="statusLayout">
+           <property name="spacing">
+            <number>9</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="statusIndicator">
+             <property name="minimumSize">
+              <size>
+               <width>10</width>
+               <height>10</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>10</width>
+               <height>10</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statusTitleLabel">
+             <property name="text">
+              <string>尚未连接</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="statusSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="statusDetailLabel">
+           <property name="text">
+            <string>连接后即可访问校园网络资源。</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton1">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>连接服务器</string>
+           </property>
+           <property name="default">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>42</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>设置系统代理</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="controlDivider">
+           <property name="frameShape">
+            <enum>QFrame::Shape::HLine</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Sunken</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="profileEyebrowLabel">
+           <property name="text">
+            <string>当前配置</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="profileNameLabel">
+           <property name="text">
+            <string>默认</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="profileDetailLabel">
+           <property name="text">
+            <string>EasyConnect · 等待连接</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="controlBottomSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="qqGroupLabel">
+           <property name="text">
+            <string>如遇问题加 QQ 群反馈：1037726410</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="logPanel">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <layout class="QVBoxLayout" name="logPanelLayout">
+         <property name="spacing">
+          <number>14</number>
+         </property>
+         <property name="leftMargin">
+          <number>16</number>
+         </property>
+         <property name="topMargin">
+          <number>16</number>
+         </property>
+         <property name="rightMargin">
+          <number>16</number>
+         </property>
+         <property name="bottomMargin">
+          <number>16</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="logHeaderLayout">
+           <property name="spacing">
+            <number>8</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="logTitleLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="logTitleLabel">
+               <property name="text">
+                <string>运行日志</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="logSubtitleLabel">
+               <property name="text">
+                <string>连接过程与诊断信息</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="logHeaderSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="openLogPushButton">
+             <property name="toolTip">
+              <string>在系统中打开完整日志文件</string>
+             </property>
+             <property name="text">
+              <string>打开日志文件</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="copyLogPushButton">
+             <property name="toolTip">
+              <string>复制日志到剪贴板</string>
+             </property>
+             <property name="text">
+              <string>复制</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="clearLogPushButton">
+             <property name="toolTip">
+              <string>清空窗口中的日志</string>
+             </property>
+             <property name="text">
+              <string>清空</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="logPlainTextEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="maximumBlockCount">
+            <number>1000</number>
+           </property>
+           <property name="placeholderText">
+            <string>连接日志将在这里显示</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -150,28 +450,10 @@ Line3</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>822</width>
      <height>33</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">QMenu::item {
-     padding: 5px 10px 5px 10px;
-     }
-     QMenu::item:selected {
-     background-color: rgb(0, 85, 127);
-     color: rgb(255, 255, 255);
-     }
-    </string>
-   </property>
-   <widget class="QMenu" name="helpMenu">
-    <property name="title">
-     <string>帮助</string>
-    </property>
-    <addaction name="checkUpdateAction"/>
-    <addaction name="projectAction"/>
-    <addaction name="aboutAction"/>
-   </widget>
    <widget class="QMenu" name="fileMenu">
     <property name="title">
      <string>文件</string>
@@ -192,15 +474,20 @@ Line3</string>
     </property>
     <addaction name="configurationGuideAction"/>
    </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>帮助</string>
+    </property>
+    <addaction name="checkUpdateAction"/>
+    <addaction name="projectAction"/>
+    <addaction name="aboutAction"/>
+   </widget>
    <addaction name="fileMenu"/>
    <addaction name="profileMenu"/>
    <addaction name="helpMenu"/>
   </widget>
   <action name="aboutAction">
    <property name="text">
-    <string>关于本软件</string>
-   </property>
-   <property name="toolTip">
     <string>关于本软件</string>
    </property>
    <property name="menuRole">
@@ -277,8 +564,16 @@ Line3</string>
   </action>
  </widget>
  <tabstops>
+  <tabstop>guidePushButton</tabstop>
+  <tabstop>settingPushButton</tabstop>
+  <tabstop>pushButton1</tabstop>
+  <tabstop>pushButton2</tabstop>
   <tabstop>logPlainTextEdit</tabstop>
+  <tabstop>copyLogPushButton</tabstop>
+  <tabstop>clearLogPushButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

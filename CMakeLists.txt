@@ -19,7 +19,7 @@ endif()
 add_compile_definitions(PROJ_VER="${PROJ_VER}")
 message("PROJ_VER=${PROJ_VER}")
 
-find_package(Qt6 COMPONENTS
+find_package(Qt6 6.5 COMPONENTS
     Core
     Concurrent
     Gui

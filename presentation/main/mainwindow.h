@@ -53,6 +53,12 @@ private:
 
     void resetZjuConnectUi();
 
+    void applyColorScheme(Qt::ColorScheme scheme);
+
+    void updateConnectionState(ConnectionState state);
+
+    void updateProfileSummary();
+
     void showNotification(
         const QString &title,
         const QString &content,
