@@ -16,19 +16,23 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     QStringList arguments;
 
     appendOption(arguments, "-protocol", profile.endpoint.protocol);
-    if (!profile.endpoint.authType.isEmpty())
-    {
-        arguments << "-auth-type" << "auth/" + profile.endpoint.authType;
-    }
 
     appendOption(arguments, "-graph-code-file", runtimePaths.graphCodeFile);
     if (profile.endpoint.protocol == "atrust")
     {
+        if (!profile.endpoint.authType.isEmpty())
+        {
+            arguments << "-auth-type" << "auth/" + profile.endpoint.authType;
+        }
         appendOption(arguments, "-client-data-file", runtimePaths.clientDataFile);
+        appendOption(arguments, "-login-domain", profile.endpoint.loginDomain);
+        appendOption(arguments, "-phone", profile.endpoint.phone);
+        if (profile.behavior.updateBestNodesInterval != 300)
+        {
+            arguments << "-update-best-nodes-interval" << QString::number(profile.behavior.updateBestNodesInterval);
+        }
     }
 
-    appendOption(arguments, "-phone", profile.endpoint.phone);
-    appendOption(arguments, "-login-domain", profile.endpoint.loginDomain);
     appendOption(arguments, "-server", profile.endpoint.server);
     if (profile.endpoint.port != 0)
     {
@@ -109,11 +113,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     appendOption(arguments, "-http-bind", profile.proxy.httpBind);
     appendOption(arguments, "-shadowsocks-url", profile.proxy.shadowsocksUrl);
     appendOption(arguments, "-dial-direct-proxy", profile.proxy.dialDirectProxy);
-    if (profile.behavior.updateBestNodesInterval != 300)
-    {
-        arguments << "-update-best-nodes-interval"
-                  << QString::number(profile.behavior.updateBestNodesInterval);
-    }
     appendOption(arguments, "-tcp-port-forwarding", profile.tunnel.tcpPortForwarding);
     appendOption(arguments, "-udp-port-forwarding", profile.tunnel.udpPortForwarding);
     appendOption(arguments, "-custom-dns", profile.dns.custom);
