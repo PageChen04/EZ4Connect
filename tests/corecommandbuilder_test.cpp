@@ -31,14 +31,28 @@ bool buildsMinimalCommand()
 bool addsGraphCaptchaFileForEasyConnect()
 {
     ConnectionProfile profile;
-    profile.endpoint.protocol = "easyconnect";
+    profile.endpoint = {
+        "easyconnect",
+        "cas",
+        "domain",
+        "86-123",
+        "vpn.example.edu",
+        443
+    };
+    profile.behavior.updateBestNodesInterval = 30;
 
     CoreRuntimePaths runtimePaths;
     runtimePaths.graphCodeFile = "/tmp/easyconnect-graph.jpg";
+    runtimePaths.clientDataFile = "/tmp/atrust-client-data.json";
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     return expectEqual(
         command.arguments,
-        {"-protocol", "easyconnect", "-graph-code-file", "/tmp/easyconnect-graph.jpg"},
+        {
+            "-protocol", "easyconnect",
+            "-graph-code-file", "/tmp/easyconnect-graph.jpg",
+            "-server", "vpn.example.edu",
+            "-port", "443"
+        },
         "addsGraphCaptchaFileForEasyConnect"
     );
 }
@@ -64,11 +78,12 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-password", "secret",
         "-totp-secret", "TOTP",
         "-protocol", "atrust",
-        "-auth-type", "auth/cas",
         "-graph-code-file", "/tmp/graph.jpg",
+        "-auth-type", "auth/cas",
         "-client-data-file", "/tmp/client-data.json",
-        "-phone", "86-123",
         "-login-domain", "domain",
+        "-phone", "86-123",
+        "-update-best-nodes-interval", "30",
         "-server", "vpn.example.edu",
         "-port", "8443",
         "-zju-dns-server", "10.0.0.1",
@@ -94,7 +109,6 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-http-bind", "127.0.0.1:1081",
         "-shadowsocks-url", "ss://url",
         "-dial-direct-proxy", "http://direct",
-        "-update-best-nodes-interval", "30",
         "-tcp-port-forwarding", "127.0.0.1:80/10.0.0.1:80",
         "-udp-port-forwarding", "127.0.0.1:53/10.0.0.1:53",
         "-custom-dns", "example.org=1.1.1.1",
