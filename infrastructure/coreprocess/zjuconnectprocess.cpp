@@ -271,5 +271,17 @@ void ZjuConnectProcess::writeInput(const QByteArray &data)
 
 ZjuConnectProcess::~ZjuConnectProcess()
 {
-    stop();
+    disconnect(zjuConnectProcess, nullptr, this, nullptr);
+
+    if (zjuConnectProcess->state() == QProcess::NotRunning)
+    {
+        return;
+    }
+
+    zjuConnectProcess->terminate();
+    if (!zjuConnectProcess->waitForFinished(3000))
+    {
+        zjuConnectProcess->kill();
+        zjuConnectProcess->waitForFinished();
+    }
 }
