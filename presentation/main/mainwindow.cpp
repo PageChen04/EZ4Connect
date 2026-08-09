@@ -11,6 +11,7 @@
 #include <QGuiApplication>
 #include <QActionGroup>
 #include <QInputDialog>
+#include <QMargins>
 #include <QStyle>
 #include <QStyleHints>
 #include <QTimer>
@@ -69,6 +70,10 @@ MainWindow::MainWindow(
     upgradeSettings();
 
     ui->setupUi(this);
+#ifdef Q_OS_MACOS
+    const QMargins centralMargins = ui->centralWidget->contentsMargins();
+    ui->centralWidget->setContentsMargins(centralMargins.left(), 16, centralMargins.right(), centralMargins.bottom());
+#endif
     ui->logPlainTextEdit->setFont(
         QFontDatabase::systemFont(QFontDatabase::FixedFont)
     );

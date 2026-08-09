@@ -27,7 +27,7 @@ void PresentationHelpers::showAboutDialog(QWidget *parent)
         "<br>作者：<a href='https://github.com/chenx-dust'>Chenx Dust</a>" +
         "<br>项目主页：<a href='https://github.com/" + repository +
         "'>https://github.com/" + repository + "</a>" +
-        "<br><br><b>致谢：</b>" +
+        "<br><br>致谢：" +
         "<br><br>ZJU-Connect-for-Windows" +
         "<br>基于 Qt 编写的 ZJU 网络客户端" +
         "<br>作者：<a href='https://myth.cx'>Myth</a>" +

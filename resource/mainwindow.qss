@@ -6,8 +6,6 @@ QMenu {
 }
 
 QMenuBar {
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
     padding: 3px 10px;
 }
 
@@ -120,7 +118,6 @@ QPushButton#pushButton1 {
     border-width: 1px;
     border-style: solid;
     border-radius: 5px;
-    font-size: 12px;
     padding: 8px;
 }
 
