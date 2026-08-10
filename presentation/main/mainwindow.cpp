@@ -72,7 +72,7 @@ MainWindow::MainWindow(
     ui->setupUi(this);
 #ifdef Q_OS_MACOS
     const QMargins centralMargins = ui->centralWidget->contentsMargins();
-    ui->centralWidget->setContentsMargins(centralMargins.left(), 16, centralMargins.right(), centralMargins.bottom());
+    ui->centralWidget->setContentsMargins(centralMargins.left(), 12, centralMargins.right(), centralMargins.bottom());
 #endif
     ui->logPlainTextEdit->setFont(
         QFontDatabase::systemFont(QFontDatabase::FixedFont)
@@ -524,10 +524,6 @@ void MainWindow::updateProfileSummary()
 
     QStringList details{protocol};
     details.append(server.isEmpty() ? QStringLiteral("尚未配置服务器") : server);
-    if (systemProxySession != nullptr && systemProxySession->isEnabled())
-    {
-        details.append(QStringLiteral("系统代理已启用"));
-    }
 
     ui->profileNameLabel->setText(profileName);
     ui->profileDetailLabel->setText(details.join(QStringLiteral(" · ")));
