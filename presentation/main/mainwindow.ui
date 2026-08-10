@@ -240,7 +240,7 @@
          <item>
           <widget class="QLabel" name="statusDetailLabel">
            <property name="text">
-            <string>连接后即可访问校园网络资源。</string>
+            <string>连接后即可访问网络资源。</string>
            </property>
            <property name="wordWrap">
             <bool>true</bool>

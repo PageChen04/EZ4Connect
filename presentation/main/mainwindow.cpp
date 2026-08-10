@@ -458,7 +458,7 @@ void MainWindow::updateConnectionState(ConnectionState state)
     case ConnectionState::Disconnected:
         propertyValue = "disconnected";
         title = "尚未连接";
-        detail = "连接后即可访问校园网络资源。";
+        detail = "连接后即可访问网络资源。";
         break;
     case ConnectionState::Starting:
         propertyValue = "starting";
