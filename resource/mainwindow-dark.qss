@@ -76,7 +76,7 @@ QMenu::item:selected {
 }
 
 #statusIndicator[connectionState="running"] {
-    background: #55b9e7;
+    background: #5acb83;
 }
 
 #statusIndicator[connectionState="stopping"] {

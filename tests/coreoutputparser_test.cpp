@@ -21,6 +21,7 @@ bool recognizesCoreProtocol()
         {"Please enter your SMS code:", CoreOutputEvent::SmsCode},
         {"Please enter your TOTP code:", CoreOutputEvent::TotpCode},
         {"Please enter the callback url:", CoreOutputEvent::SsoCallback},
+        {"VPN client started", CoreOutputEvent::ClientStarted},
         {"graph check code still required after second login attempt", CoreOutputEvent::CaptchaFailed},
         {"Access is denied.", CoreOutputEvent::AccessDenied},
         {"listen failed on 127.0.0.1", CoreOutputEvent::ListenFailed},

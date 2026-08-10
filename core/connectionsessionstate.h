@@ -10,6 +10,7 @@ enum class ConnectionState
     Running,
     Stopping,
     Reconnecting,
+    Interrupted,
     Failed,
 };
 
@@ -35,7 +36,7 @@ public:
     int reconnectDelayMs() const;
 
     bool requestStart(const ReconnectPolicy &policy);
-    void processStarted();
+    void connectionEstablished();
     void recordError(ZJU_ERROR error);
     bool requestStop();
     ProcessFinishAction processFinished();

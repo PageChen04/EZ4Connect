@@ -30,6 +30,7 @@ signals:
     void ssoAuth();
     void askSudoPass();
     void started();
+    void connectionEstablished();
     void finished();
 };
 

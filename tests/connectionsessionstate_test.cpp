@@ -16,7 +16,7 @@ bool normalLifecycle()
         return false;
     }
 
-    session.processStarted();
+    session.connectionEstablished();
     if (session.state() != ConnectionState::Running)
     {
         qCritical() << "normalLifecycle failed at running";
@@ -43,7 +43,7 @@ bool reconnectsOnlyEligibleFailures()
 {
     ConnectionSessionState session;
     session.requestStart({true, 2500});
-    session.processStarted();
+    session.connectionEstablished();
     session.recordError(ZJU_ERROR::AUTH_EXPIRED);
 
     if (session.processFinished() != ProcessFinishAction::Reconnect
@@ -61,7 +61,6 @@ bool reconnectsOnlyEligibleFailures()
         return false;
     }
 
-    session.processStarted();
     session.recordError(ZJU_ERROR::INVALID_DETAIL);
     if (session.processFinished() != ProcessFinishAction::Complete
         || session.state() != ConnectionState::Failed)
@@ -76,7 +75,7 @@ bool keepsFirstErrorAndCancelsPendingReconnect()
 {
     ConnectionSessionState session;
     session.requestStart({true, 1000});
-    session.processStarted();
+    session.connectionEstablished();
     session.recordError(ZJU_ERROR::AUTH_EXPIRED);
     session.recordError(ZJU_ERROR::OTHER);
     if (session.error() != ZJU_ERROR::AUTH_EXPIRED)
@@ -95,6 +94,22 @@ bool keepsFirstErrorAndCancelsPendingReconnect()
     }
     return true;
 }
+
+bool establishedConnectionEndsAsInterrupted()
+{
+    ConnectionSessionState session;
+    session.requestStart({false, 1000});
+    session.connectionEstablished();
+    session.recordError(ZJU_ERROR::OTHER);
+
+    if (session.processFinished() != ProcessFinishAction::Complete
+        || session.state() != ConnectionState::Interrupted)
+    {
+        qCritical() << "establishedConnectionEndsAsInterrupted failed";
+        return false;
+    }
+    return true;
+}
 }
 
 int main(int argc, char *argv[])
@@ -103,6 +118,7 @@ int main(int argc, char *argv[])
     return normalLifecycle()
         && reconnectsOnlyEligibleFailures()
         && keepsFirstErrorAndCancelsPendingReconnect()
+        && establishedConnectionEndsAsInterrupted()
         ? 0
         : 1;
 }

@@ -26,6 +26,10 @@ CoreOutputEvent CoreOutputParser::parse(const QString &output)
     {
         return CoreOutputEvent::SsoCallback;
     }
+    if (output.contains("VPN client started"))
+    {
+        return CoreOutputEvent::ClientStarted;
+    }
     if (output.contains("graph check code still required after second login attempt") ||
         output.contains("The characters are incorrect or has expired!"))
     {

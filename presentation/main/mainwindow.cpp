@@ -482,6 +482,11 @@ void MainWindow::updateConnectionState(ConnectionState state)
         title = "正在重连";
         detail = "连接中断，正在按当前策略重新尝试。";
         break;
+    case ConnectionState::Interrupted:
+        propertyValue = "failed";
+        title = "连接已断开";
+        detail = "VPN 核心意外退出，请查看右侧日志。";
+        break;
     case ConnectionState::Failed:
         propertyValue = "failed";
         title = "连接失败";
