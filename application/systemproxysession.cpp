@@ -80,10 +80,10 @@ bool SystemProxySession::startOperation(Operation operation, const SystemProxyCo
                 result.conflict = proxyBackend->hasConflict(config);
                 break;
             case Operation::Enable:
-                proxyBackend->apply(config);
+                result.succeeded = proxyBackend->apply(config);
                 break;
             case Operation::Disable:
-                proxyBackend->clear();
+                result.succeeded = proxyBackend->clear();
                 break;
             case Operation::None:
                 break;
@@ -100,12 +100,12 @@ void SystemProxySession::handleOperationFinished()
     currentOperation = Operation::None;
 
     bool stateChanged = false;
-    if (result.operation == Operation::Enable && !enabled)
+    if (result.succeeded && result.operation == Operation::Enable && !enabled)
     {
         enabled = true;
         stateChanged = true;
     }
-    else if (result.operation == Operation::Disable && enabled)
+    else if (result.succeeded && result.operation == Operation::Disable && enabled)
     {
         enabled = false;
         stateChanged = true;

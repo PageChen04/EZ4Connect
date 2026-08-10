@@ -215,17 +215,21 @@ void AuthDialogCoordinator::requestSmsCode(bool showSkipSecondaryAuthOption)
     layout->addWidget(buttonBox);
 
     const bool accepted = dialog.exec() == QDialog::Accepted;
-    QByteArray input;
-    if (accepted)
+    if (!accepted)
     {
-        input = codeEdit->text().toLocal8Bit();
-        if (showSkipSecondaryAuthOption && skipCheckBox->isChecked())
-        {
-            input.prepend('$');
-        }
+        qInfo().noquote() << "短信验证码输入已取消";
+        emit interactiveInputCancelled();
+        return;
     }
 
-    qInfo().noquote() << (accepted ? "短信验证码已提交" : "短信验证码输入已取消");
+    QByteArray input;
+    input = codeEdit->text().toLocal8Bit();
+    if (showSkipSecondaryAuthOption && skipCheckBox->isChecked())
+    {
+        input.prepend('$');
+    }
+
+    qInfo().noquote() << "短信验证码已提交";
     emit interactiveInputSubmitted(input + "\n");
 }
 
@@ -241,7 +245,14 @@ void AuthDialogCoordinator::requestTotpCode()
         "",
         &accepted
     );
-    qInfo().noquote() << (accepted ? "TOTP 验证码已提交" : "TOTP 验证码输入已取消");
+    if (!accepted)
+    {
+        qInfo().noquote() << "TOTP 验证码输入已取消";
+        emit interactiveInputCancelled();
+        return;
+    }
+
+    qInfo().noquote() << "TOTP 验证码已提交";
     emit interactiveInputSubmitted(totp.toLocal8Bit() + "\n");
 }
 

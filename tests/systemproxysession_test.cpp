@@ -18,6 +18,8 @@ public:
     int conflictChecks = 0;
     int applyCalls = 0;
     int clearCalls = 0;
+    bool applySucceeds = true;
+    bool clearSucceeds = true;
     SystemProxyConfig lastConfig;
     QSemaphore operationStarted;
     QSemaphore allowOperationToFinish;
@@ -29,17 +31,19 @@ public:
         return conflict;
     }
 
-    void apply(const SystemProxyConfig &config) override
+    bool apply(const SystemProxyConfig &config) override
     {
         ++applyCalls;
         lastConfig = config;
         operationStarted.release();
         allowOperationToFinish.acquire();
+        return applySucceeds;
     }
 
-    void clear() override
+    bool clear() override
     {
         ++clearCalls;
+        return clearSucceeds;
     }
 };
 
@@ -115,6 +119,21 @@ bool delegatesPlatformOperationsAsynchronouslyAndTracksOwnedState()
         return false;
     }
 
+    fake->applySucceeds = false;
+    if (!session.enable(config)
+        || !fake->operationStarted.tryAcquire(1, 1000))
+    {
+        qCritical() << "failed enable did not start";
+        return false;
+    }
+    fake->allowOperationToFinish.release();
+    if (!waitUntil([&]() { return !session.isBusy(); }) || session.isEnabled())
+    {
+        qCritical() << "failed enable must not change owned state";
+        return false;
+    }
+    fake->applySucceeds = true;
+
     if (!session.enable(config)
         || !fake->operationStarted.tryAcquire(1, 1000))
     {
@@ -125,7 +144,7 @@ bool delegatesPlatformOperationsAsynchronouslyAndTracksOwnedState()
     session.clearBeforeShutdown();
     if (session.isBusy()
         || session.isEnabled()
-        || fake->applyCalls != 2
+        || fake->applyCalls != 3
         || fake->clearCalls != 3)
     {
         qCritical() << "clearBeforeShutdown must clear an in-flight enable";

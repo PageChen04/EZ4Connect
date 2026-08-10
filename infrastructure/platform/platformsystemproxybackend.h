@@ -7,8 +7,8 @@ class PlatformSystemProxyBackend : public SystemProxyBackend
 {
 public:
     bool hasConflict(const SystemProxyConfig &config) override;
-    void apply(const SystemProxyConfig &config) override;
-    void clear() override;
+    bool apply(const SystemProxyConfig &config) override;
+    bool clear() override;
 };
 
 #endif // PLATFORMSYSTEMPROXYBACKEND_H

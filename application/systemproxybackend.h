@@ -16,8 +16,8 @@ public:
     virtual ~SystemProxyBackend() = default;
 
     virtual bool hasConflict(const SystemProxyConfig &config) = 0;
-    virtual void apply(const SystemProxyConfig &config) = 0;
-    virtual void clear() = 0;
+    virtual bool apply(const SystemProxyConfig &config) = 0;
+    virtual bool clear() = 0;
 };
 
 #endif // SYSTEMPROXYBACKEND_H

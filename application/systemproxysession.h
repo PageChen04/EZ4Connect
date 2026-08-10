@@ -42,6 +42,7 @@ private:
     {
         Operation operation;
         bool conflict = false;
+        bool succeeded = true;
     };
 
     bool startOperation(Operation operation, const SystemProxyConfig &config = {});
