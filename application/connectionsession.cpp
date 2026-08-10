@@ -21,7 +21,11 @@ ConnectionSession::ConnectionSession(CoreProcess *coreProcess, QObject *parent)
     });
     connect(coreProcess, &CoreProcess::started, this, [this]()
     {
-        sessionState.processStarted();
+        emit stateChanged(sessionState.state());
+    });
+    connect(coreProcess, &CoreProcess::connectionEstablished, this, [this]()
+    {
+        sessionState.connectionEstablished();
         emit stateChanged(sessionState.state());
     });
     connect(coreProcess, &CoreProcess::finished,

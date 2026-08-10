@@ -33,6 +33,11 @@ public:
         emit finished();
     }
 
+    void establishConnection()
+    {
+        emit connectionEstablished();
+    }
+
     void requestSudoPassword()
     {
         emit askSudoPass();
@@ -53,11 +58,18 @@ bool delegatesProcessLifecycleThroughPort()
 
     if (!session.start(profile, {})
         || coreProcess->startCalls != 1
-        || session.state() != ConnectionState::Running
+        || session.state() != ConnectionState::Starting
         || !session.isActive()
         || session.start(profile, {}))
     {
         qCritical() << "start delegation failed";
+        return false;
+    }
+
+    coreProcess->establishConnection();
+    if (session.state() != ConnectionState::Running)
+    {
+        qCritical() << "connection establishment was not reflected";
         return false;
     }
 
@@ -77,6 +89,25 @@ bool delegatesProcessLifecycleThroughPort()
         || session.isActive())
     {
         qCritical() << "completion delegation failed";
+        return false;
+    }
+    return true;
+}
+
+bool distinguishesInterruptedConnectionFromStartupFailure()
+{
+    auto *coreProcess = new FakeCoreProcess();
+    ConnectionSession session(coreProcess);
+    ConnectionProfile profile;
+
+    session.start(profile, {});
+    coreProcess->establishConnection();
+    emit coreProcess->error(ZJU_ERROR::OTHER);
+    coreProcess->complete();
+
+    if (session.state() != ConnectionState::Interrupted)
+    {
+        qCritical() << "established connection was reported as startup failure";
         return false;
     }
     return true;
@@ -133,6 +164,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication application(argc, argv);
     return delegatesProcessLifecycleThroughPort()
+        && distinguishesInterruptedConnectionFromStartupFailure()
         && emptySudoPasswordStopsTheSession()
         && cancelledInteractiveInputSubmitsNewlineBeforeStopping() ? 0 : 1;
 }

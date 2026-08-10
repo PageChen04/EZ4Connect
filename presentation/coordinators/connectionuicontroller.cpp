@@ -133,7 +133,10 @@ ConnectionUiController::ConnectionUiController(
             this->connectButton->setText("连接服务器");
             this->trayConnectAction->setText("连接服务器");
             this->proxyButton->hide();
-            showConnectionError(error);
+            if (this->connectionSession->state() != ConnectionState::Interrupted)
+            {
+                showConnectionError(error);
+            }
         }
     );
     connect(

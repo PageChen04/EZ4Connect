@@ -42,7 +42,7 @@ bool ConnectionSessionState::requestStart(const ReconnectPolicy &policy)
     return true;
 }
 
-void ConnectionSessionState::processStarted()
+void ConnectionSessionState::connectionEstablished()
 {
     if (currentState == ConnectionState::Starting)
     {
@@ -76,6 +76,7 @@ bool ConnectionSessionState::requestStop()
 
 ProcessFinishAction ConnectionSessionState::processFinished()
 {
+    const bool connectionWasEstablished = currentState == ConnectionState::Running;
     if (desiredConnected
         && reconnectPolicy.enabled
         && isReconnectable(currentError))
@@ -85,9 +86,16 @@ ProcessFinishAction ConnectionSessionState::processFinished()
     }
 
     desiredConnected = false;
-    currentState = currentError == ZJU_ERROR::NONE
-        ? ConnectionState::Disconnected
-        : ConnectionState::Failed;
+    if (connectionWasEstablished)
+    {
+        currentState = ConnectionState::Interrupted;
+    }
+    else
+    {
+        currentState = currentError == ZJU_ERROR::NONE
+            ? ConnectionState::Disconnected
+            : ConnectionState::Failed;
+    }
     return ProcessFinishAction::Complete;
 }
 

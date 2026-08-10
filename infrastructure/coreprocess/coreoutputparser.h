@@ -13,6 +13,7 @@ enum class CoreOutputEvent
     SmsCode,
     TotpCode,
     SsoCallback,
+    ClientStarted,
     CaptchaFailed,
     AccessDenied,
     ListenFailed,

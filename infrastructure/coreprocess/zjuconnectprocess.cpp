@@ -104,6 +104,9 @@ void ZjuConnectProcess::processOutputLines(const QList<QByteArray> &lines)
         case CoreOutputEvent::SsoCallback:
             emit ssoAuth();
             break;
+        case CoreOutputEvent::ClientStarted:
+            emit connectionEstablished();
+            break;
         case CoreOutputEvent::CaptchaFailed:
             emit error(ZJU_ERROR::CAPTCHA_FAILED);
             break;
