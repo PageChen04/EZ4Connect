@@ -13,6 +13,10 @@
 
 如使用中遇到问题，可加入 ZJU-Connect 用户反馈 QQ 群 1037726410 交流。
 
+<div align="center">
+<img src="docs/main.png" width="600px">
+</div>
+
 ## 使用方式
 
 在本项目的 [Releases](https://github.com/chenx-dust/EZ4Connect/releases) 页面下载最新版本：
