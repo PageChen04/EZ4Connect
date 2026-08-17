@@ -48,7 +48,6 @@ struct TunnelOptions
     bool addRoute = false;
     bool dnsHijack = false;
     bool fakeIp = false;
-    bool tcpTunnelMode = false;
     QString tcpPortForwarding;
     QString udpPortForwarding;
 };

@@ -100,10 +100,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
             arguments << "-add-route";
         }
     }
-    if (profile.tunnel.tcpTunnelMode)
-    {
-        arguments << "-tcp-tunnel-mode";
-    }
     if (profile.behavior.debugDump)
     {
         arguments << "-debug-dump";

@@ -65,7 +65,7 @@ bool buildsCompleteCommandInCompatibleOrder()
     profile.dns = {"10.0.0.1", false, "10.0.0.2", 60, true, "example.org=1.1.1.1"};
     profile.proxy = {"127.0.0.1:1080", "127.0.0.1:1081", "ss://url", "http://direct",
                      true, "example.org"};
-    profile.tunnel = {true, true, true, true, true, "127.0.0.1:80/10.0.0.1:80",
+    profile.tunnel = {true, true, true, true, "127.0.0.1:80/10.0.0.1:80",
                       "127.0.0.1:53/10.0.0.1:53"};
     profile.behavior = {30, true, true, "https://keepalive", "en0", true, true, true,
                         true, true};
@@ -103,7 +103,6 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-dns-hijack",
         "-fake-ip",
         "-add-route",
-        "-tcp-tunnel-mode",
         "-debug-dump",
         "-socks-bind", "127.0.0.1:1080",
         "-http-bind", "127.0.0.1:1081",

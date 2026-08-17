@@ -47,7 +47,6 @@ bool loadsSettingsIntoTypedProfile()
     settings.setValue("ZJUConnect/AddRoute", true);
     settings.setValue("ZJUConnect/DNSHijack", true);
     settings.setValue("ZJUConnect/FakeIP", true);
-    settings.setValue("ZJUConnect/TCPTunnelMode", true);
     settings.setValue("ZJUConnect/TCPPortForwarding", "tcp-forward");
     settings.setValue("ZJUConnect/UDPPortForwarding", "udp-forward");
     settings.setValue("ZJUConnect/UpdateBestNodesInterval", 30);
@@ -94,7 +93,6 @@ bool loadsSettingsIntoTypedProfile()
         && profile.tunnel.addRoute
         && profile.tunnel.dnsHijack
         && profile.tunnel.fakeIp
-        && profile.tunnel.tcpTunnelMode
         && profile.tunnel.tcpPortForwarding == "tcp-forward"
         && profile.tunnel.udpPortForwarding == "udp-forward"
         && profile.behavior.updateBestNodesInterval == 30

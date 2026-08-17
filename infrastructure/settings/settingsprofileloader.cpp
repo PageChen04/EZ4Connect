@@ -72,7 +72,6 @@ ConnectionProfile SettingsProfileLoader::load(
         settings.value("ZJUConnect/AddRoute").toBool(),
         settings.value("ZJUConnect/DNSHijack").toBool(),
         settings.value("ZJUConnect/FakeIP").toBool(),
-        settings.value("ZJUConnect/TCPTunnelMode").toBool(),
         settings.value("ZJUConnect/TCPPortForwarding").toString(),
         settings.value("ZJUConnect/UDPPortForwarding").toString()
     };
