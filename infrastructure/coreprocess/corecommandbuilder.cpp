@@ -2,6 +2,54 @@
 
 namespace
 {
+QString quoteArgumentForLog(const QString &argument)
+{
+    bool requiresQuotes = argument.isEmpty();
+    for (const QChar character : argument)
+    {
+        if (character.isSpace() || character == '"')
+        {
+            requiresQuotes = true;
+            break;
+        }
+    }
+
+    if (!requiresQuotes)
+    {
+        return argument;
+    }
+
+    QString quoted;
+    quoted.reserve(argument.size() + 2);
+    quoted += '"';
+    for (const QChar character : argument)
+    {
+        switch (character.unicode())
+        {
+        case '\\':
+            quoted += "\\\\";
+            break;
+        case '"':
+            quoted += "\\\"";
+            break;
+        case '\n':
+            quoted += "\\n";
+            break;
+        case '\r':
+            quoted += "\\r";
+            break;
+        case '\t':
+            quoted += "\\t";
+            break;
+        default:
+            quoted += character;
+            break;
+        }
+    }
+    quoted += '"';
+    return quoted;
+}
+
 void appendOption(QStringList &arguments, const QString &name, const QString &value)
 {
     if (!value.isEmpty())
@@ -9,6 +57,17 @@ void appendOption(QStringList &arguments, const QString &name, const QString &va
         arguments << name << value;
     }
 }
+}
+
+QString CoreCommand::loggableCommandLine() const
+{
+    QStringList quotedArguments;
+    quotedArguments.reserve(loggableArguments.size());
+    for (const QString &argument : loggableArguments)
+    {
+        quotedArguments.append(quoteArgumentForLog(argument));
+    }
+    return quotedArguments.join(' ');
 }
 
 CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const CoreRuntimePaths &runtimePaths)

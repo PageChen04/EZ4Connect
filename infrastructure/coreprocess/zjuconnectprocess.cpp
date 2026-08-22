@@ -209,7 +209,7 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
     }
 
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
-    qInfo().noquote() << "VPN 启动！参数：" + command.loggableArguments.join(' ');
+    qInfo().noquote() << "VPN 启动！参数：" + command.loggableCommandLine();
 
     if (!profile.credentials.totpSecret.isEmpty())
     {

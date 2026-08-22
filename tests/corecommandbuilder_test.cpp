@@ -137,6 +137,32 @@ bool excludesCredentialsFromLoggableArguments()
     }
     return safe;
 }
+
+bool quotesLoggableArgumentsWithoutChangingArguments()
+{
+    CoreCommand command;
+    command.loggableArguments = {
+        "-graph-code-file",
+        "/tmp/captcha images/graph.jpg",
+        "",
+        "embedded\"quote",
+        "line\nbreak"
+    };
+
+    const QStringList originalArguments = command.loggableArguments;
+    const QString expected =
+        "-graph-code-file \"/tmp/captcha images/graph.jpg\" \"\" "
+        "\"embedded\\\"quote\" \"line\\nbreak\"";
+    const QString actual = command.loggableCommandLine();
+    if (actual != expected || command.loggableArguments != originalArguments)
+    {
+        qCritical().noquote() << "quotesLoggableArgumentsWithoutChangingArguments failed"
+                              << "\nexpected:" << expected
+                              << "\nactual:  " << actual;
+        return false;
+    }
+    return true;
+}
 }
 
 int main(int argc, char *argv[])
@@ -145,6 +171,7 @@ int main(int argc, char *argv[])
     const bool passed = buildsMinimalCommand()
         && addsGraphCaptchaFileForEasyConnect()
         && buildsCompleteCommandInCompatibleOrder()
-        && excludesCredentialsFromLoggableArguments();
+        && excludesCredentialsFromLoggableArguments()
+        && quotesLoggableArgumentsWithoutChangingArguments();
     return passed ? 0 : 1;
 }

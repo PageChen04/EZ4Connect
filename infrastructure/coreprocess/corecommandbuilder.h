@@ -15,6 +15,8 @@ struct CoreCommand
 {
     QStringList arguments;
     QStringList loggableArguments;
+
+    QString loggableCommandLine() const;
 };
 
 class CoreCommandBuilder
