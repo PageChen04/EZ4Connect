@@ -73,6 +73,7 @@ QString CoreCommand::loggableCommandLine() const
 CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const CoreRuntimePaths &runtimePaths)
 {
     QStringList arguments;
+    QStringList credentials;
 
     appendOption(arguments, "-protocol", profile.endpoint.protocol);
 
@@ -91,6 +92,24 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
             arguments << "-update-best-nodes-interval" << QString::number(profile.behavior.updateBestNodesInterval);
         }
     }
+    else if (profile.endpoint.protocol == "easyconnect")
+    {
+        if (profile.behavior.disableMultiLine)
+        {
+            arguments << "-disable-multi-line";
+        }
+        if (profile.behavior.disableZjuConfig)
+        {
+            arguments << "-disable-zju-config";
+        }
+        if (profile.behavior.skipDomainResource)
+        {
+            arguments << "-skip-domain-resource";
+        }
+        appendOption(arguments, "-custom-proxy-domain", profile.proxy.customDomains);
+        appendOption(credentials, "-cert-file", profile.credentials.certFile);
+        appendOption(credentials, "-cert-password", profile.credentials.certPassword);
+    }
 
     appendOption(arguments, "-server", profile.endpoint.server);
     if (profile.endpoint.port != 0)
@@ -108,10 +127,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     }
     appendOption(arguments, "-secondary-dns-server", profile.dns.secondary);
 
-    if (profile.behavior.disableMultiLine)
-    {
-        arguments << "-disable-multi-line";
-    }
     if (profile.behavior.disableKeepAlive)
     {
         arguments << "-disable-keep-alive";
@@ -121,10 +136,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     if (profile.behavior.autoDetectInterface)
     {
         arguments << "-auto-detect-interface";
-    }
-    if (profile.behavior.disableZjuConfig)
-    {
-        arguments << "-disable-zju-config";
     }
     if (profile.dns.disableZjuDns)
     {
@@ -138,11 +149,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     {
         arguments << "-proxy-all";
     }
-    if (profile.behavior.skipDomainResource)
-    {
-        arguments << "-skip-domain-resource";
-    }
-
     if (profile.tunnel.tunMode)
     {
         arguments << "-tun-mode";
@@ -171,7 +177,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     appendOption(arguments, "-tcp-port-forwarding", profile.tunnel.tcpPortForwarding);
     appendOption(arguments, "-udp-port-forwarding", profile.tunnel.udpPortForwarding);
     appendOption(arguments, "-custom-dns", profile.dns.custom);
-    appendOption(arguments, "-custom-proxy-domain", profile.proxy.customDomains);
     if (!profile.extraArguments.isEmpty())
     {
         arguments.append(profile.extraArguments.split(" "));
@@ -180,13 +185,10 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     CoreCommand command;
     command.loggableArguments = arguments;
 
-    QStringList credentials;
     appendOption(credentials, "-username", profile.credentials.username);
     appendOption(credentials, "-password", profile.credentials.password);
     appendOption(credentials, "-totp-secret", profile.credentials.totpSecret);
 
-    appendOption(arguments, "-cert-file", profile.credentials.certFile);
-    appendOption(arguments, "-cert-password", profile.credentials.certPassword);
     command.arguments = credentials + arguments;
     return command;
 }

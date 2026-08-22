@@ -16,8 +16,8 @@ ConnectionProfile SettingsProfileLoader::load(
             : "certificate"
     ).toString();
     const bool useCertificate =
-        settings.value("ZJUConnect/Protocol").toString() != "easyconnect"
-        || easyconnectAuthType == "certificate";
+        settings.value("ZJUConnect/Protocol").toString() == "easyconnect"
+        && easyconnectAuthType == "certificate";
     profile.credentials = {
         username,
         password,

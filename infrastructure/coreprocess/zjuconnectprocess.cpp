@@ -215,7 +215,8 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
     {
         qInfo().noquote() << "使用了 TOTP";
     }
-    if (!profile.credentials.certFile.isEmpty())
+    if (profile.endpoint.protocol == "easyconnect"
+        && !profile.credentials.certFile.isEmpty())
     {
         qInfo().noquote() << "使用了证书文件";
     }

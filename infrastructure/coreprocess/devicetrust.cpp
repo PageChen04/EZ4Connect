@@ -16,6 +16,11 @@ void DeviceTrust::set(
     bool trusted
 )
 {
+    if (protocol != "atrust")
+    {
+        throw std::runtime_error("授信设备功能仅支持 aTrust");
+    }
+
     QStringList arguments;
     if (!protocol.isEmpty())
     {

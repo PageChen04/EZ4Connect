@@ -69,8 +69,8 @@ bool loadsSettingsIntoTypedProfile()
         && profile.credentials.username == "alice"
         && profile.credentials.password == "secret"
         && profile.credentials.totpSecret == "totp"
-        && profile.credentials.certFile == "/tmp/client.p12"
-        && profile.credentials.certPassword == "cert-password"
+        && profile.credentials.certFile.isEmpty()
+        && profile.credentials.certPassword.isEmpty()
         && profile.endpoint.protocol == "atrust"
         && profile.endpoint.authType == "cas"
         && profile.endpoint.loginDomain == "domain"

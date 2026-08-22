@@ -89,16 +89,13 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-zju-dns-server", "10.0.0.1",
         "-dns-ttl", "60",
         "-secondary-dns-server", "10.0.0.2",
-        "-disable-multi-line",
         "-disable-keep-alive",
         "-keep-alive-url", "https://keepalive",
         "-bind-interface", "en0",
         "-auto-detect-interface",
-        "-disable-zju-config",
         "-disable-zju-dns",
         "-disable-server-config",
         "-proxy-all",
-        "-skip-domain-resource",
         "-tun-mode",
         "-dns-hijack",
         "-fake-ip",
@@ -111,12 +108,72 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-tcp-port-forwarding", "127.0.0.1:80/10.0.0.1:80",
         "-udp-port-forwarding", "127.0.0.1:53/10.0.0.1:53",
         "-custom-dns", "example.org=1.1.1.1",
-        "-custom-proxy-domain", "example.org",
-        "-foo", "bar",
-        "-cert-file", "/tmp/client.p12",
-        "-cert-password", "cert-secret"
+        "-foo", "bar"
     };
     return expectEqual(command.arguments, expected, "buildsCompleteCommandInCompatibleOrder");
+}
+
+bool keepsEasyConnectOnlyOptionsOutOfATrustCommand()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "atrust";
+    profile.credentials.certFile = "/tmp/client.p12";
+    profile.credentials.certPassword = "cert-secret";
+    profile.proxy.customDomains = "example.org";
+    profile.behavior.disableMultiLine = true;
+    profile.behavior.disableZjuConfig = true;
+    profile.behavior.skipDomainResource = true;
+
+    const CoreCommand command = CoreCommandBuilder::build(profile);
+    return expectEqual(
+        command.arguments,
+        {"-protocol", "atrust"},
+        "keepsEasyConnectOnlyOptionsOutOfATrustCommand"
+    );
+}
+
+bool addsEasyConnectOnlyOptionsForEasyConnect()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "easyconnect";
+    profile.credentials.username = "alice";
+    profile.credentials.certFile = "/tmp/client.p12";
+    profile.credentials.certPassword = "cert-secret";
+    profile.proxy.customDomains = "example.org";
+    profile.behavior.disableMultiLine = true;
+    profile.behavior.disableZjuConfig = true;
+    profile.behavior.skipDomainResource = true;
+
+    const CoreCommand command = CoreCommandBuilder::build(profile);
+    return expectEqual(
+        command.arguments,
+        {
+            "-cert-file", "/tmp/client.p12",
+            "-cert-password", "cert-secret",
+            "-username", "alice",
+            "-protocol", "easyconnect",
+            "-disable-multi-line",
+            "-disable-zju-config",
+            "-skip-domain-resource",
+            "-custom-proxy-domain", "example.org"
+        },
+        "addsEasyConnectOnlyOptionsForEasyConnect"
+    );
+}
+
+bool keepsATrustOnlyOptionsOutOfEasyConnectCommand()
+{
+    ConnectionProfile profile;
+    profile.endpoint = {"easyconnect", "cas", "domain", "86-123", QString(), 0};
+    profile.behavior.updateBestNodesInterval = 30;
+
+    const CoreRuntimePaths runtimePaths{QString(), "/tmp/structured-client-data.json"};
+    const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
+    return expectEqual(
+        command.arguments,
+        {"-protocol", "easyconnect"},
+        "keepsATrustOnlyOptionsOutOfEasyConnectCommand"
+    );
 }
 
 bool excludesCredentialsFromLoggableArguments()
@@ -171,6 +228,9 @@ int main(int argc, char *argv[])
     const bool passed = buildsMinimalCommand()
         && addsGraphCaptchaFileForEasyConnect()
         && buildsCompleteCommandInCompatibleOrder()
+        && keepsEasyConnectOnlyOptionsOutOfATrustCommand()
+        && addsEasyConnectOnlyOptionsForEasyConnect()
+        && keepsATrustOnlyOptionsOutOfEasyConnectCommand()
         && excludesCredentialsFromLoggableArguments()
         && quotesLoggableArgumentsWithoutChangingArguments();
     return passed ? 0 : 1;
