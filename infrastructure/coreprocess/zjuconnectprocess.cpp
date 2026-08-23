@@ -223,6 +223,16 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
 
     QString programToStart = profile.program;
     QStringList finalArgs = command.arguments;
+    QProcessEnvironment processEnvironment = QProcessEnvironment::systemEnvironment();
+    for (const QString &name : command.clearedEnvironmentVariables)
+    {
+        processEnvironment.remove(name);
+    }
+    for (auto iterator = command.environmentVariables.cbegin();
+         iterator != command.environmentVariables.cend(); ++iterator)
+    {
+        processEnvironment.insert(iterator.key(), iterator.value());
+    }
 
 #if defined(Q_OS_UNIX)
     if (profile.tunnel.tunMode && !Privileges::isElevated())
@@ -232,12 +242,17 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
         QStringList sudoArgs;
         sudoArgs << "-p" << "SUDO_ASK_PASS";
         sudoArgs << "-S";
+        if (!command.environmentVariables.isEmpty())
+        {
+            sudoArgs << "--preserve-env=" + command.environmentVariables.keys().join(',');
+        }
         sudoArgs << programToStart << finalArgs;
         programToStart = "sudo";
         finalArgs = sudoArgs;
     }
 #endif
 
+    zjuConnectProcess->setProcessEnvironment(processEnvironment);
     zjuConnectProcess->start(programToStart, finalArgs);
     zjuConnectProcess->waitForStarted();
     if (zjuConnectProcess->state() == QProcess::NotRunning)

@@ -18,6 +18,23 @@ bool expectEqual(const QStringList &actual, const QStringList &expected, const c
     return false;
 }
 
+bool expectEnvironmentValue(
+    const CoreCommand &command,
+    const QString &name,
+    const QString &expected,
+    const char *testName
+)
+{
+    const QString actual = command.environmentVariables.value(name);
+    if (actual == expected)
+    {
+        return true;
+    }
+
+    qCritical().noquote() << testName << "failed for" << name;
+    return false;
+}
+
 bool buildsMinimalCommand()
 {
     ConnectionProfile profile;
@@ -25,7 +42,8 @@ bool buildsMinimalCommand()
 
     const CoreCommand command = CoreCommandBuilder::build(profile);
     return expectEqual(command.arguments, {"-protocol", "easyconnect"}, "buildsMinimalCommand")
-        && expectEqual(command.loggableArguments, command.arguments, "minimalCommandIsLoggable");
+        && expectEqual(command.loggableArguments, command.arguments, "minimalCommandIsLoggable")
+        && command.environmentVariables.isEmpty();
 }
 
 bool addsGraphCaptchaFileForEasyConnect()
@@ -74,9 +92,6 @@ bool buildsCompleteCommandInCompatibleOrder()
     const CoreRuntimePaths runtimePaths{"/tmp/graph.jpg", "/tmp/client-data.json"};
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     const QStringList expected{
-        "-username", "alice",
-        "-password", "secret",
-        "-totp-secret", "TOTP",
         "-protocol", "atrust",
         "-graph-code-file", "/tmp/graph.jpg",
         "-auth-type", "auth/cas",
@@ -110,7 +125,12 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-custom-dns", "example.org=1.1.1.1",
         "-foo", "bar"
     };
-    return expectEqual(command.arguments, expected, "buildsCompleteCommandInCompatibleOrder");
+    return expectEqual(command.arguments, expected, "buildsCompleteCommandInCompatibleOrder")
+        && expectEnvironmentValue(command, "ZJU_CONNECT_USERNAME", "alice", "mapsUsernameToEnvironment")
+        && expectEnvironmentValue(command, "ZJU_CONNECT_PASSWORD", "secret", "mapsPasswordToEnvironment")
+        && expectEnvironmentValue(command, "ZJU_CONNECT_TOTP_SECRET", "TOTP", "mapsTotpToEnvironment")
+        && !command.environmentVariables.contains("ZJU_CONNECT_CERT_FILE")
+        && !command.environmentVariables.contains("ZJU_CONNECT_CERT_PASSWORD");
 }
 
 bool keepsEasyConnectOnlyOptionsOutOfATrustCommand()
@@ -148,9 +168,6 @@ bool addsEasyConnectOnlyOptionsForEasyConnect()
     return expectEqual(
         command.arguments,
         {
-            "-cert-file", "/tmp/client.p12",
-            "-cert-password", "cert-secret",
-            "-username", "alice",
             "-protocol", "easyconnect",
             "-disable-multi-line",
             "-disable-zju-config",
@@ -158,7 +175,10 @@ bool addsEasyConnectOnlyOptionsForEasyConnect()
             "-custom-proxy-domain", "example.org"
         },
         "addsEasyConnectOnlyOptionsForEasyConnect"
-    );
+    )
+        && expectEnvironmentValue(command, "ZJU_CONNECT_USERNAME", "alice", "mapsEasyConnectUsernameToEnvironment")
+        && expectEnvironmentValue(command, "ZJU_CONNECT_CERT_FILE", "/tmp/client.p12", "mapsCertFileToEnvironment")
+        && expectEnvironmentValue(command, "ZJU_CONNECT_CERT_PASSWORD", "cert-secret", "mapsCertPasswordToEnvironment");
 }
 
 bool keepsATrustOnlyOptionsOutOfEasyConnectCommand()
@@ -193,6 +213,59 @@ bool excludesCredentialsFromLoggableArguments()
         qCritical() << "excludesCredentialsFromLoggableArguments failed:" << logLine;
     }
     return safe;
+}
+
+bool passesCredentialsAsArgumentsWhenEnabled()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "easyconnect";
+    profile.credentials = {
+        "alice",
+        "secret",
+        "TOTP",
+        "/tmp/client.p12",
+        "cert-secret",
+        true
+    };
+
+    const CoreCommand command = CoreCommandBuilder::build(profile);
+    return expectEqual(
+        command.arguments,
+        {
+            "-cert-file", "/tmp/client.p12",
+            "-cert-password", "cert-secret",
+            "-username", "alice",
+            "-password", "secret",
+            "-totp-secret", "TOTP",
+            "-protocol", "easyconnect"
+        },
+        "passesCredentialsAsArgumentsWhenEnabled"
+    )
+        && expectEqual(
+            command.loggableArguments,
+            {"-protocol", "easyconnect"},
+            "argumentCredentialsStayOutOfLogs"
+        )
+        && command.environmentVariables.isEmpty();
+}
+
+bool clearsManagedVariablesEvenWhenCredentialsAreEmpty()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "easyconnect";
+
+    const CoreCommand command = CoreCommandBuilder::build(profile);
+    return expectEqual(
+        command.clearedEnvironmentVariables,
+        {
+            "ZJU_CONNECT_USERNAME",
+            "ZJU_CONNECT_PASSWORD",
+            "ZJU_CONNECT_TOTP_SECRET",
+            "ZJU_CONNECT_CERT_FILE",
+            "ZJU_CONNECT_CERT_PASSWORD"
+        },
+        "clearsManagedVariablesEvenWhenCredentialsAreEmpty"
+    );
 }
 
 bool quotesLoggableArgumentsWithoutChangingArguments()
@@ -232,6 +305,8 @@ int main(int argc, char *argv[])
         && addsEasyConnectOnlyOptionsForEasyConnect()
         && keepsATrustOnlyOptionsOutOfEasyConnectCommand()
         && excludesCredentialsFromLoggableArguments()
+        && passesCredentialsAsArgumentsWhenEnabled()
+        && clearsManagedVariablesEvenWhenCredentialsAreEmpty()
         && quotesLoggableArgumentsWithoutChangingArguments();
     return passed ? 0 : 1;
 }

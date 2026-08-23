@@ -10,6 +10,7 @@ struct ConnectionCredentials
     QString totpSecret;
     QString certFile;
     QString certPassword;
+    bool passAsArguments = false;
 };
 
 struct ConnectionEndpoint

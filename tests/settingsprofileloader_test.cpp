@@ -50,6 +50,7 @@ bool loadsSettingsIntoTypedProfile()
     settings.setValue("ZJUConnect/TCPPortForwarding", "tcp-forward");
     settings.setValue("ZJUConnect/UDPPortForwarding", "udp-forward");
     settings.setValue("ZJUConnect/UpdateBestNodesInterval", 30);
+    settings.setValue("ZJUConnect/CredentialsAsArguments", true);
     settings.setValue("ZJUConnect/MultiLine", false);
     settings.setValue("ZJUConnect/KeepAlive", false);
     settings.setValue("ZJUConnect/KeepAliveURL", "https://keepalive");
@@ -71,6 +72,7 @@ bool loadsSettingsIntoTypedProfile()
         && profile.credentials.totpSecret == "totp"
         && profile.credentials.certFile.isEmpty()
         && profile.credentials.certPassword.isEmpty()
+        && profile.credentials.passAsArguments
         && profile.endpoint.protocol == "atrust"
         && profile.endpoint.authType == "cas"
         && profile.endpoint.loginDomain == "domain"
@@ -122,6 +124,7 @@ bool usesCompatibleDefaults()
     const ConnectionProfile profile = SettingsProfileLoader::load(settings, "", "", "");
     const bool passed =
         profile.behavior.updateBestNodesInterval == 300
+        && !profile.credentials.passAsArguments
         && profile.behavior.disableMultiLine
         && profile.behavior.disableKeepAlive
         && profile.behavior.disableZjuConfig

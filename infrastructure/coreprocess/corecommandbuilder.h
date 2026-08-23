@@ -1,6 +1,7 @@
 #ifndef CORECOMMANDBUILDER_H
 #define CORECOMMANDBUILDER_H
 
+#include <QMap>
 #include <QStringList>
 
 #include "core/connectionprofile.h"
@@ -15,6 +16,8 @@ struct CoreCommand
 {
     QStringList arguments;
     QStringList loggableArguments;
+    QStringList clearedEnvironmentVariables;
+    QMap<QString, QString> environmentVariables;
 
     QString loggableCommandLine() const;
 };

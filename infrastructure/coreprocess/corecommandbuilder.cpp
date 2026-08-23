@@ -57,6 +57,29 @@ void appendOption(QStringList &arguments, const QString &name, const QString &va
         arguments << name << value;
     }
 }
+
+QString environmentVariableName(const QString &option)
+{
+    QString name = option;
+    while (name.startsWith('-'))
+    {
+        name.remove(0, 1);
+    }
+    return "ZJU_CONNECT_" + name.replace('-', '_').toUpper();
+}
+
+void appendSensitiveOption(
+    CoreCommand &command,
+    const QString &name,
+    const QString &value
+)
+{
+    const QString environmentName = environmentVariableName(name);
+    if (!value.isEmpty())
+    {
+        command.environmentVariables.insert(environmentName, value);
+    }
+}
 }
 
 QString CoreCommand::loggableCommandLine() const
@@ -73,7 +96,38 @@ QString CoreCommand::loggableCommandLine() const
 CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const CoreRuntimePaths &runtimePaths)
 {
     QStringList arguments;
-    QStringList credentials;
+    QStringList credentialArguments;
+    CoreCommand command;
+    command.clearedEnvironmentVariables = {
+        environmentVariableName("-username"),
+        environmentVariableName("-password"),
+        environmentVariableName("-totp-secret"),
+        environmentVariableName("-cert-file"),
+        environmentVariableName("-cert-password")
+    };
+
+    if (profile.credentials.passAsArguments)
+    {
+        if (profile.endpoint.protocol == "easyconnect")
+        {
+            appendOption(credentialArguments, "-cert-file", profile.credentials.certFile);
+            appendOption(credentialArguments, "-cert-password", profile.credentials.certPassword);
+        }
+        appendOption(credentialArguments, "-username", profile.credentials.username);
+        appendOption(credentialArguments, "-password", profile.credentials.password);
+        appendOption(credentialArguments, "-totp-secret", profile.credentials.totpSecret);
+    }
+    else
+    {
+        appendSensitiveOption(command, "-username", profile.credentials.username);
+        appendSensitiveOption(command, "-password", profile.credentials.password);
+        appendSensitiveOption(command, "-totp-secret", profile.credentials.totpSecret);
+        if (profile.endpoint.protocol == "easyconnect")
+        {
+            appendSensitiveOption(command, "-cert-file", profile.credentials.certFile);
+            appendSensitiveOption(command, "-cert-password", profile.credentials.certPassword);
+        }
+    }
 
     appendOption(arguments, "-protocol", profile.endpoint.protocol);
 
@@ -107,8 +161,6 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
             arguments << "-skip-domain-resource";
         }
         appendOption(arguments, "-custom-proxy-domain", profile.proxy.customDomains);
-        appendOption(credentials, "-cert-file", profile.credentials.certFile);
-        appendOption(credentials, "-cert-password", profile.credentials.certPassword);
     }
 
     appendOption(arguments, "-server", profile.endpoint.server);
@@ -182,13 +234,7 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
         arguments.append(profile.extraArguments.split(" "));
     }
 
-    CoreCommand command;
     command.loggableArguments = arguments;
-
-    appendOption(credentials, "-username", profile.credentials.username);
-    appendOption(credentials, "-password", profile.credentials.password);
-    appendOption(credentials, "-totp-secret", profile.credentials.totpSecret);
-
-    command.arguments = credentials + arguments;
+    command.arguments = credentialArguments + arguments;
     return command;
 }

@@ -207,6 +207,9 @@ void SettingWindow::loadSettings()
     ui->certPasswordLineEdit->setText(
         QByteArray::fromBase64(settings->value("Credential/CertPassword").toString().toUtf8())
     );
+    ui->credentialsAsArgumentsCheckBox->setChecked(
+        settings->value("ZJUConnect/CredentialsAsArguments", false).toBool()
+    );
 
     ProfileManager profileManager;
     ui->autoStartCheckBox->setChecked(profileManager.autoStartEnabled());
@@ -299,6 +302,10 @@ void SettingWindow::applySettings()
     settings->setValue("Credential/TOTPSecret", ui->totpSecretLineEdit->text());
     settings->setValue("Credential/CertFile", ui->certFileLineEdit->text());
     settings->setValue("Credential/CertPassword", QString(ui->certPasswordLineEdit->text().toUtf8().toBase64()));
+    settings->setValue(
+        "ZJUConnect/CredentialsAsArguments",
+        ui->credentialsAsArgumentsCheckBox->isChecked()
+    );
 
     settings->setValue("Common/ConnectAfterStart", ui->connectAfterStartCheckBox->isChecked());
     settings->setValue("Common/CheckUpdateAfterStart", ui->checkUpdateAfterStartCheckBox->isChecked());
