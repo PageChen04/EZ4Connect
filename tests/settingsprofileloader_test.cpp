@@ -33,6 +33,8 @@ bool loadsSettingsIntoTypedProfile()
     settings.setValue("ZJUConnect/DNS", "10.0.0.1");
     settings.setValue("ZJUConnect/DNSAuto", false);
     settings.setValue("ZJUConnect/SecondaryDNS", "10.0.0.2");
+    settings.setValue("ZJUConnect/LocalDNSServer", "223.5.5.5:53");
+    settings.setValue("ZJUConnect/DNSServerBind", "127.0.0.1:5353");
     settings.setValue("ZJUConnect/DNSTTL", 60);
     settings.setValue("ZJUConnect/DisableZJUDNS", true);
     settings.setValue("ZJUConnect/CustomDNS", "example.org=1.1.1.1");
@@ -88,6 +90,8 @@ bool loadsSettingsIntoTypedProfile()
         && profile.dns.ttl == 60
         && profile.dns.disableZjuDns
         && profile.dns.custom == "example.org=1.1.1.1"
+        && profile.dns.localDnsServer == "223.5.5.5:53"
+        && profile.dns.dnsServerBind == "127.0.0.1:5353"
         && profile.proxy.socksBind == "[::]:1080"
         && profile.proxy.httpBind == "[::]:1081"
         && profile.proxy.shadowsocksUrl == "ss://url"
@@ -134,6 +138,8 @@ bool usesCompatibleDefaults()
         && profile.behavior.disableMultiLine
         && profile.behavior.disableKeepAlive
         && profile.behavior.disableZjuConfig
+        && profile.dns.localDnsServer.isEmpty()
+        && profile.dns.dnsServerBind.isEmpty()
         && !profile.debug.detailedOutput
         && !profile.debug.capturePcap
         && !profile.debug.exportTlsKeys

@@ -80,7 +80,8 @@ bool buildsCompleteCommandInCompatibleOrder()
     ConnectionProfile profile;
     profile.endpoint = {"atrust", "cas", "domain", "86-123", "vpn.example.edu", 8443};
     profile.credentials = {"alice", "secret", "TOTP", "/tmp/client.p12", "cert-secret"};
-    profile.dns = {"10.0.0.1", false, "10.0.0.2", 60, true, "example.org=1.1.1.1"};
+    profile.dns = {"10.0.0.1", false, "10.0.0.2", 60, true,
+                   "example.org=1.1.1.1", "223.5.5.5:53", "127.0.0.1:5353"};
     profile.proxy = {"127.0.0.1:1080", "127.0.0.1:1081", "ss://url", "http://direct",
                      true, "example.org"};
     profile.tunnel = {true, true, true, true, true, "127.0.0.1:80/10.0.0.1:80",
@@ -107,14 +108,16 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-update-best-nodes-interval", "30",
         "-server", "vpn.example.edu",
         "-port", "8443",
-        "-zju-dns-server", "10.0.0.1",
+        "-remote-dns-server", "10.0.0.1",
         "-dns-ttl", "60",
         "-secondary-dns-server", "10.0.0.2",
+        "-local-dns-server", "223.5.5.5:53",
+        "-dns-server-bind", "127.0.0.1:5353",
         "-disable-keep-alive",
         "-keep-alive-url", "https://keepalive",
         "-bind-interface", "en0",
         "-auto-detect-interface",
-        "-disable-zju-dns",
+        "-disable-remote-dns",
         "-disable-server-config",
         "-proxy-all",
         "-tun-mode",

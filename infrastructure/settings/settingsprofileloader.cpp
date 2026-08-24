@@ -53,7 +53,9 @@ ConnectionProfile SettingsProfileLoader::load(
         settings.value("ZJUConnect/SecondaryDNS").toString(),
         settings.value("ZJUConnect/DNSTTL").toInt(),
         settings.value("ZJUConnect/DisableZJUDNS").toBool(),
-        settings.value("ZJUConnect/CustomDNS", "").toString()
+        settings.value("ZJUConnect/CustomDNS", "").toString(),
+        settings.value("ZJUConnect/LocalDNSServer", "").toString(),
+        settings.value("ZJUConnect/DNSServerBind", "").toString()
     };
 
     const QString bindPrefix = settings.value("ZJUConnect/OutsideAccess", false).toBool()

@@ -171,13 +171,15 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
 
     if (!profile.dns.primary.isEmpty() || profile.dns.automatic)
     {
-        arguments << "-zju-dns-server" << (profile.dns.automatic ? "auto" : profile.dns.primary);
+        arguments << "-remote-dns-server" << (profile.dns.automatic ? "auto" : profile.dns.primary);
     }
     if (profile.dns.ttl != 3600)
     {
         arguments << "-dns-ttl" << QString::number(profile.dns.ttl);
     }
     appendOption(arguments, "-secondary-dns-server", profile.dns.secondary);
+    appendOption(arguments, "-local-dns-server", profile.dns.localDnsServer);
+    appendOption(arguments, "-dns-server-bind", profile.dns.dnsServerBind);
 
     if (profile.behavior.disableKeepAlive)
     {
@@ -191,7 +193,7 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
     }
     if (profile.dns.disableZjuDns)
     {
-        arguments << "-disable-zju-dns";
+        arguments << "-disable-remote-dns";
     }
     if (profile.behavior.disableServerConfig)
     {

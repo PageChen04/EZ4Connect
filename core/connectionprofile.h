@@ -31,6 +31,8 @@ struct DnsOptions
     int ttl = 3600;
     bool disableZjuDns = false;
     QString custom;
+    QString localDnsServer;
+    QString dnsServerBind;
 };
 
 struct ProxyOptions

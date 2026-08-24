@@ -238,6 +238,12 @@ void SettingWindow::loadSettings()
     ui->dnsLineEdit->setText(settings->value("ZJUConnect/DNS").toString());
     ui->dnsAutoCheckBox->setChecked(settings->value("ZJUConnect/DNSAuto").toBool());
     ui->secondaryDnsLineEdit->setText(settings->value("ZJUConnect/SecondaryDNS").toString());
+    ui->localDnsServerLineEdit->setText(
+        settings->value("ZJUConnect/LocalDNSServer", "").toString()
+    );
+    ui->dnsServerBindLineEdit->setText(
+        settings->value("ZJUConnect/DNSServerBind", "").toString()
+    );
     ui->dnsTTLSpinBox->setValue(settings->value("ZJUConnect/DNSTTL").toInt());
     ui->socks5PortSpinBox->setValue(settings->value("ZJUConnect/SOCKS5Port").toInt());
     ui->httpPortSpinBox->setValue(settings->value("ZJUConnect/HTTPPort").toInt());
@@ -338,6 +344,14 @@ void SettingWindow::applySettings()
     settings->setValue("ZJUConnect/DNS", ui->dnsLineEdit->text());
     settings->setValue("ZJUConnect/DNSAuto", ui->dnsAutoCheckBox->isChecked());
     settings->setValue("ZJUConnect/SecondaryDNS", ui->secondaryDnsLineEdit->text());
+    settings->setValue(
+        "ZJUConnect/LocalDNSServer",
+        ui->localDnsServerLineEdit->text().trimmed()
+    );
+    settings->setValue(
+        "ZJUConnect/DNSServerBind",
+        ui->dnsServerBindLineEdit->text().trimmed()
+    );
     settings->setValue("ZJUConnect/DNSTTL", ui->dnsTTLSpinBox->value());
     settings->setValue("ZJUConnect/SOCKS5Port", ui->socks5PortSpinBox->value());
     settings->setValue("ZJUConnect/HTTPPort", ui->httpPortSpinBox->value());

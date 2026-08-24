@@ -22,6 +22,8 @@ void DefaultSettings::reset(QSettings &settings)
     settings.setValue("ZJUConnect/DNS", "");
     settings.setValue("ZJUConnect/DNSAuto", true);
     settings.setValue("ZJUConnect/SecondaryDNS", "");
+    settings.setValue("ZJUConnect/LocalDNSServer", "");
+    settings.setValue("ZJUConnect/DNSServerBind", "");
     settings.setValue("ZJUConnect/DNSTTL", 3600);
     settings.setValue("ZJUConnect/SOCKS5Port", 11080);
     settings.setValue("ZJUConnect/HTTPPort", 11081);
