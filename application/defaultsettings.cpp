@@ -56,6 +56,7 @@ void DefaultSettings::reset(QSettings &settings)
     settings.setValue("ZJUConnect/AddRoute", false);
     settings.setValue("ZJUConnect/DNSHijack", false);
     settings.setValue("ZJUConnect/FakeIP", false);
+    settings.setValue("ZJUConnect/TCPTunnelMode", false);
     settings.setValue("ZJUConnect/AutoDetectInterface", false);
 
     settings.setValue("ZJUConnect/TCPPortForwarding", "");

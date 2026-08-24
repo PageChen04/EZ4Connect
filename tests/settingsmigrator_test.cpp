@@ -38,29 +38,10 @@ bool recommendsResetForUnsupportedVersions()
     }
     return passed;
 }
-
-bool removesTcpTunnelModeFromVersionEightProfiles()
-{
-    QTemporaryDir directory;
-    QSettings settings(directory.filePath("profile.ini"), QSettings::IniFormat);
-    settings.setValue("Common/ConfigVersion", 8);
-    settings.setValue("ZJUConnect/TCPTunnelMode", true);
-
-    const bool passed =
-        SettingsMigrator::prepare(settings) == SettingsMigrationAction::None
-        && !settings.contains("ZJUConnect/TCPTunnelMode");
-    if (!passed)
-    {
-        qCritical() << "removesTcpTunnelModeFromVersionEightProfiles failed";
-    }
-    return passed;
-}
 }
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    return migratesKnownVersions()
-        && recommendsResetForUnsupportedVersions()
-        && removesTcpTunnelModeFromVersionEightProfiles() ? 0 : 1;
+    return migratesKnownVersions() && recommendsResetForUnsupportedVersions() ? 0 : 1;
 }

@@ -22,11 +22,6 @@ SettingsMigrationAction SettingsMigrator::prepare(QSettings &settings)
     {
         return SettingsMigrationAction::MigrateAutoStart;
     }
-    if (configVersion == 8)
-    {
-        settings.remove("ZJUConnect/TCPTunnelMode");
-        return SettingsMigrationAction::None;
-    }
     if (configVersion < ApplicationConstants::ConfigVersion)
     {
         return SettingsMigrationAction::RecommendReset;
