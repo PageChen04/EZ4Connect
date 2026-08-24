@@ -217,10 +217,12 @@ CoreCommand CoreCommandBuilder::build(const ConnectionProfile &profile, const Co
             arguments << "-add-route";
         }
     }
-    if (profile.behavior.debugDump)
+    if (profile.debug.detailedOutput)
     {
         arguments << "-debug-dump";
     }
+    appendOption(arguments, "-debug-pcap-file", runtimePaths.debugPcapFile);
+    appendOption(arguments, "-debug-tls-log-file", runtimePaths.debugTlsLogFile);
 
     appendOption(arguments, "-socks-bind", profile.proxy.socksBind);
     appendOption(arguments, "-http-bind", profile.proxy.httpBind);

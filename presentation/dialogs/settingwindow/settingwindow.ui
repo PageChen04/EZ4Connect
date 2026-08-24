@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>520</width>
-    <height>642</height>
+    <height>636</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -915,16 +915,6 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="credentialsAsArgumentsCheckBox">
-           <property name="toolTip">
-            <string>不勾选则凭据以环境变量传递</string>
-           </property>
-           <property name="text">
-            <string>凭据以参数传递</string>
-           </property>
-          </widget>
-         </item>
          <item row="4" column="2">
           <widget class="QCheckBox" name="autoDetectInterfaceCheckBox">
            <property name="toolTip">
@@ -932,13 +922,6 @@
            </property>
            <property name="text">
             <string>自动检测网口</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QCheckBox" name="debugCheckBox">
-           <property name="text">
-            <string>核心调试</string>
            </property>
           </widget>
          </item>
@@ -953,6 +936,16 @@
           <widget class="QCheckBox" name="disableDNSCheckBox">
            <property name="text">
             <string>禁用内部 DNS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QCheckBox" name="credentialsAsArgumentsCheckBox">
+           <property name="toolTip">
+            <string>不勾选则凭据以环境变量传递</string>
+           </property>
+           <property name="text">
+            <string>凭据以参数传递</string>
            </property>
           </widget>
          </item>
@@ -1015,6 +1008,94 @@
           <string>绑定网络接口</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="debugTab">
+      <attribute name="title">
+       <string>调试</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="debugTabLayout">
+       <item>
+        <widget class="QGroupBox" name="debugOptionsGroupBox">
+         <property name="title">
+          <string>调试输出</string>
+         </property>
+         <layout class="QVBoxLayout" name="debugOptionsLayout">
+          <item>
+           <widget class="QCheckBox" name="detailedDebugCheckBox">
+            <property name="text">
+             <string>启用详细调试输出</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="debugPcapCheckBox">
+            <property name="toolTip">
+             <string>将 VPN 底层 TCP 收发数据保存为 PCAP 文件</string>
+            </property>
+            <property name="text">
+             <string>导出底层流量（PCAP）</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="debugTlsLogCheckBox">
+            <property name="toolTip">
+             <string>导出 NSS key log，可配合 PCAP 在 Wireshark 中解密 TLS 流量</string>
+            </property>
+            <property name="text">
+             <string>导出 TLS 会话密钥</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="debugTipLabel">
+         <property name="text">
+          <string>如遇到协议实现问题，请勾选以上三个选项后运行，复现问题情况，然后进入日志目录将最新的输出打包发送给开发者，以供调试。</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="debugSecurityWarningLabel">
+         <property name="font">
+          <font>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>警告：调试日志、PCAP 和 TLS 会话密钥可能包含账号、访问地址及会话密钥等敏感信息，请勿随意发送给他人。</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="openLogDirectoryPushButton">
+         <property name="text">
+          <string>打开日志目录</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="debugTabVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>320</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

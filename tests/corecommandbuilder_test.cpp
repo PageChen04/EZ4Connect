@@ -86,10 +86,16 @@ bool buildsCompleteCommandInCompatibleOrder()
     profile.tunnel = {true, true, true, true, "127.0.0.1:80/10.0.0.1:80",
                       "127.0.0.1:53/10.0.0.1:53"};
     profile.behavior = {30, true, true, "https://keepalive", "en0", true, true, true,
-                        true, true};
+                        true};
+    profile.debug = {true, true, true};
     profile.extraArguments = "-foo bar";
 
-    const CoreRuntimePaths runtimePaths{"/tmp/graph.jpg", "/tmp/client-data.json"};
+    const CoreRuntimePaths runtimePaths{
+        "/tmp/graph.jpg",
+        "/tmp/client-data.json",
+        "/tmp/debug capture.pcap",
+        "/tmp/debug capture.keys.log"
+    };
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     const QStringList expected{
         "-protocol", "atrust",
@@ -116,6 +122,8 @@ bool buildsCompleteCommandInCompatibleOrder()
         "-fake-ip",
         "-add-route",
         "-debug-dump",
+        "-debug-pcap-file", "/tmp/debug capture.pcap",
+        "-debug-tls-log-file", "/tmp/debug capture.keys.log",
         "-socks-bind", "127.0.0.1:1080",
         "-http-bind", "127.0.0.1:1081",
         "-shadowsocks-url", "ss://url",
@@ -293,6 +301,21 @@ bool quotesLoggableArgumentsWithoutChangingArguments()
     }
     return true;
 }
+
+bool omitsDisabledDebugArtifacts()
+{
+    ConnectionProfile profile;
+    profile.endpoint.protocol = "easyconnect";
+    profile.debug.capturePcap = true;
+    profile.debug.exportTlsKeys = true;
+
+    const CoreCommand command = CoreCommandBuilder::build(profile);
+    return expectEqual(
+        command.arguments,
+        {"-protocol", "easyconnect"},
+        "omitsDisabledDebugArtifacts"
+    );
+}
 }
 
 int main(int argc, char *argv[])
@@ -307,6 +330,7 @@ int main(int argc, char *argv[])
         && excludesCredentialsFromLoggableArguments()
         && passesCredentialsAsArgumentsWhenEnabled()
         && clearsManagedVariablesEvenWhenCredentialsAreEmpty()
-        && quotesLoggableArgumentsWithoutChangingArguments();
+        && quotesLoggableArgumentsWithoutChangingArguments()
+        && omitsDisabledDebugArtifacts();
     return passed ? 0 : 1;
 }

@@ -86,8 +86,13 @@ ConnectionProfile SettingsProfileLoader::load(
         settings.value("ZJUConnect/AutoDetectInterface", false).toBool(),
         settings.value("ZJUConnect/SkipDomainResource").toBool(),
         settings.value("ZJUConnect/DisableServerConfig").toBool(),
-        !settings.value("ZJUConnect/ZJUDefault").toBool(),
-        settings.value("ZJUConnect/Debug").toBool()
+        !settings.value("ZJUConnect/ZJUDefault").toBool()
+    };
+
+    profile.debug = {
+        settings.value("ZJUConnect/Debug").toBool(),
+        settings.value("ZJUConnect/DebugPCAP", false).toBool(),
+        settings.value("ZJUConnect/DebugTLSLog", false).toBool()
     };
 
     profile.extraArguments = settings.value("ZJUConnect/ExtraArguments", "").toString();

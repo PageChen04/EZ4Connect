@@ -28,6 +28,16 @@ SettingWindow::SettingWindow(QWidget *parent, QSettings *inputSettings, const QS
 
     loadSettings();
 
+    connect(ui->openLogDirectoryPushButton, &QPushButton::clicked, this, [this]()
+    {
+        if (!QDesktopServices::openUrl(
+                QUrl::fromLocalFile(ApplicationPaths::logDirectory())
+            ))
+        {
+            QMessageBox::warning(this, "日志目录", "无法打开日志目录。");
+        }
+    });
+
     connect(ui->portForwardingPushButton, &QPushButton::clicked,
             [&]()
             {
@@ -266,7 +276,13 @@ void SettingWindow::loadSettings()
     
     ui->zjuDefaultCheckBox->setChecked(settings->value("ZJUConnect/ZJUDefault").toBool());
     ui->disableDNSCheckBox->setChecked(settings->value("ZJUConnect/DisableZJUDNS").toBool());
-    ui->debugCheckBox->setChecked(settings->value("ZJUConnect/Debug").toBool());
+    ui->detailedDebugCheckBox->setChecked(settings->value("ZJUConnect/Debug").toBool());
+    ui->debugPcapCheckBox->setChecked(
+        settings->value("ZJUConnect/DebugPCAP", false).toBool()
+    );
+    ui->debugTlsLogCheckBox->setChecked(
+        settings->value("ZJUConnect/DebugTLSLog", false).toBool()
+    );
 
     ui->tunCheckBox->setChecked(settings->value("ZJUConnect/TUNMode").toBool());
     ui->routeCheckBox->setChecked(settings->value("ZJUConnect/AddRoute").toBool());
@@ -360,7 +376,9 @@ void SettingWindow::applySettings()
 
     settings->setValue("ZJUConnect/DisableZJUDNS", ui->disableDNSCheckBox->isChecked());
     settings->setValue("ZJUConnect/ZJUDefault", ui->zjuDefaultCheckBox->isChecked());
-    settings->setValue("ZJUConnect/Debug", ui->debugCheckBox->isChecked());
+    settings->setValue("ZJUConnect/Debug", ui->detailedDebugCheckBox->isChecked());
+    settings->setValue("ZJUConnect/DebugPCAP", ui->debugPcapCheckBox->isChecked());
+    settings->setValue("ZJUConnect/DebugTLSLog", ui->debugTlsLogCheckBox->isChecked());
 
     settings->setValue("ZJUConnect/TUNMode", ui->tunCheckBox->isChecked());
     settings->setValue("ZJUConnect/AddRoute", ui->routeCheckBox->isChecked());

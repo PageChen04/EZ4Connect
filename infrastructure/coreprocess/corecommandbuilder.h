@@ -10,6 +10,8 @@ struct CoreRuntimePaths
 {
     QString graphCodeFile;
     QString clientDataFile;
+    QString debugPcapFile;
+    QString debugTlsLogFile;
 };
 
 struct CoreCommand

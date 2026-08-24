@@ -60,6 +60,8 @@ bool loadsSettingsIntoTypedProfile()
     settings.setValue("ZJUConnect/DisableServerConfig", true);
     settings.setValue("ZJUConnect/ZJUDefault", false);
     settings.setValue("ZJUConnect/Debug", true);
+    settings.setValue("ZJUConnect/DebugPCAP", true);
+    settings.setValue("ZJUConnect/DebugTLSLog", true);
     settings.setValue("ZJUConnect/ExtraArguments", "-foo bar");
 
     const ConnectionProfile profile =
@@ -106,7 +108,9 @@ bool loadsSettingsIntoTypedProfile()
         && profile.behavior.skipDomainResource
         && profile.behavior.disableServerConfig
         && profile.behavior.disableZjuConfig
-        && profile.behavior.debugDump
+        && profile.debug.detailedOutput
+        && profile.debug.capturePcap
+        && profile.debug.exportTlsKeys
         && profile.extraArguments == "-foo bar";
 
     if (!passed)
@@ -128,6 +132,9 @@ bool usesCompatibleDefaults()
         && profile.behavior.disableMultiLine
         && profile.behavior.disableKeepAlive
         && profile.behavior.disableZjuConfig
+        && !profile.debug.detailedOutput
+        && !profile.debug.capturePcap
+        && !profile.debug.exportTlsKeys
         && profile.proxy.socksBind == "127.0.0.1:0"
         && profile.proxy.httpBind == "127.0.0.1:0";
     if (!passed)

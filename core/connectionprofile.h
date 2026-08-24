@@ -64,7 +64,13 @@ struct ConnectionBehavior
     bool skipDomainResource = false;
     bool disableServerConfig = false;
     bool disableZjuConfig = false;
-    bool debugDump = false;
+};
+
+struct DebugOptions
+{
+    bool detailedOutput = false;
+    bool capturePcap = false;
+    bool exportTlsKeys = false;
 };
 
 struct ConnectionProfile
@@ -77,6 +83,7 @@ struct ConnectionProfile
     ProxyOptions proxy;
     TunnelOptions tunnel;
     ConnectionBehavior behavior;
+    DebugOptions debug;
     QString extraArguments;
 };
 

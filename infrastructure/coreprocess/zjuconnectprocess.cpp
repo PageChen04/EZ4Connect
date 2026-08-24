@@ -208,6 +208,15 @@ void ZjuConnectProcess::start(const ConnectionProfile &profile)
         runtimePaths.clientDataFile = ApplicationPaths::clientDataFile(profile.profileId);
     }
 
+    const ApplicationPaths::DebugArtifactPaths debugPaths =
+        ApplicationPaths::createDebugArtifactFiles(
+            profile.profileId,
+            profile.debug.capturePcap,
+            profile.debug.exportTlsKeys
+        );
+    runtimePaths.debugPcapFile = debugPaths.pcapFile;
+    runtimePaths.debugTlsLogFile = debugPaths.tlsLogFile;
+
     const CoreCommand command = CoreCommandBuilder::build(profile, runtimePaths);
     qInfo().noquote() << "VPN 启动！参数：" + command.loggableCommandLine();
 

@@ -49,6 +49,8 @@ void DefaultSettings::reset(QSettings &settings)
     settings.setValue("ZJUConnect/DisableZJUDNS", false);
     settings.setValue("ZJUConnect/ZJUDefault", false);
     settings.setValue("ZJUConnect/Debug", false);
+    settings.setValue("ZJUConnect/DebugPCAP", false);
+    settings.setValue("ZJUConnect/DebugTLSLog", false);
 
     settings.setValue("ZJUConnect/TUNMode", false);
     settings.setValue("ZJUConnect/AddRoute", false);
