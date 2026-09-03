@@ -60,6 +60,18 @@ MainWindowCoordinator::MainWindowCoordinator(
     );
     connect(
         connectionSession,
+        &ConnectionSession::randCode,
+        authenticationCoordinator,
+        [this]() { authenticationCoordinator->requestSmsCode(false); }
+    );
+    connect(
+        connectionSession,
+        &ConnectionSession::radiusCode,
+        authenticationCoordinator,
+        &AuthDialogCoordinator::requestRadiusCode
+    );
+    connect(
+        connectionSession,
         &ConnectionSession::ssoAuth,
         authenticationCoordinator,
         &AuthDialogCoordinator::requestSsoLogin

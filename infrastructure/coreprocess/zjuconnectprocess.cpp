@@ -101,6 +101,12 @@ void ZjuConnectProcess::processOutputLines(const QList<QByteArray> &lines)
         case CoreOutputEvent::TotpCode:
             emit totpCode();
             break;
+        case CoreOutputEvent::RandCode:
+            emit randCode();
+            break;
+        case CoreOutputEvent::RadiusCodeWithSkipOption:
+            emit radiusCode(true);
+            break;
         case CoreOutputEvent::SsoCallback:
             emit ssoAuth();
             break;

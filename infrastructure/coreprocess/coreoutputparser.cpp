@@ -22,6 +22,15 @@ CoreOutputEvent CoreOutputParser::parse(const QString &output)
     {
         return CoreOutputEvent::TotpCode;
     }
+    if (output.contains("Please enter rand code:"))
+    {
+        return CoreOutputEvent::RandCode;
+    }
+    // aTrust RADIUS Access-Challenge：核心在密码认证后输出此提示并等待用户输入短信验证码。
+    if (output.contains("Please enter the RADIUS token:"))
+    {
+        return CoreOutputEvent::RadiusCodeWithSkipOption;
+    }
     if (output.contains("Please enter the callback url:"))
     {
         return CoreOutputEvent::SsoCallback;
@@ -97,5 +106,6 @@ bool CoreOutputParser::hasInteractivePrompt(const QByteArray &output)
            || output.contains("Please enter your SMS code:")
            || output.contains("Please enter your TOTP code:")
            || output.contains("Please enter rand code:")
+           || output.contains("Please enter the RADIUS token:")
            || output.contains("Please enter the callback url:");
 }

@@ -30,6 +30,8 @@ signals:
     void graphCaptcha(const QString &graphFile);
     void smsCode(bool showSkipSecondaryAuthOption);
     void totpCode();
+    void randCode();
+    void radiusCode(bool showSkipSecondaryAuthOption);
     void ssoAuth();
     void askSudoPass();
     void savedSudoPasswordRejected();

@@ -233,6 +233,50 @@ void AuthDialogCoordinator::requestSmsCode(bool showSkipSecondaryAuthOption)
     emit interactiveInputSubmitted(input + "\n");
 }
 
+void AuthDialogCoordinator::requestRadiusCode(bool showSkipSecondaryAuthOption)
+{
+    qInfo().noquote() << "需要 RADIUS 动态口令（短信验证码）";
+
+    QDialog dialog(parentWidget);
+    dialog.setWindowTitle("RADIUS 动态口令");
+
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel("请输入收到的短信验证码（RADIUS token）：", &dialog));
+
+    auto *codeEdit = new QLineEdit(&dialog);
+    layout->addWidget(codeEdit);
+
+    auto *skipCheckBox = new QCheckBox("跳过以后的二次认证", &dialog);
+    skipCheckBox->setVisible(showSkipSecondaryAuthOption);
+    layout->addWidget(skipCheckBox);
+
+    auto *buttonBox = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+        &dialog
+    );
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttonBox);
+
+    const bool accepted = dialog.exec() == QDialog::Accepted;
+    if (!accepted)
+    {
+        qInfo().noquote() << "RADIUS 动态口令输入已取消";
+        emit interactiveInputCancelled();
+        return;
+    }
+
+    QByteArray input;
+    input = codeEdit->text().toLocal8Bit();
+    if (showSkipSecondaryAuthOption && skipCheckBox->isChecked())
+    {
+        input.prepend('$');
+    }
+
+    qInfo().noquote() << "RADIUS 动态口令已提交";
+    emit interactiveInputSubmitted(input + "\n");
+}
+
 void AuthDialogCoordinator::requestTotpCode()
 {
     qInfo().noquote() << "需要 TOTP 验证码";
