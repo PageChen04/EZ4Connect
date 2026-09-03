@@ -12,6 +12,8 @@ enum class CoreOutputEvent
     SmsCodeWithSkipOption,
     SmsCode,
     TotpCode,
+    RandCode,
+    RadiusCodeWithSkipOption,
     SsoCallback,
     ClientStarted,
     CaptchaFailed,

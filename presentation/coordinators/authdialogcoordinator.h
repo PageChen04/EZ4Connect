@@ -33,6 +33,7 @@ public:
     void requestGraphCaptcha(const QString &graphFile);
     void requestSmsCode(bool showSkipSecondaryAuthOption);
     void requestTotpCode();
+    void requestRadiusCode(bool showSkipSecondaryAuthOption);
     void requestSsoLogin();
 
 signals:

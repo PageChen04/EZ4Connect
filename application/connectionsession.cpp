@@ -11,6 +11,8 @@ ConnectionSession::ConnectionSession(CoreProcess *coreProcess, QObject *parent)
     connect(coreProcess, &CoreProcess::graphCaptcha, this, &ConnectionSession::graphCaptcha);
     connect(coreProcess, &CoreProcess::smsCode, this, &ConnectionSession::smsCode);
     connect(coreProcess, &CoreProcess::totpCode, this, &ConnectionSession::totpCode);
+    connect(coreProcess, &CoreProcess::randCode, this, &ConnectionSession::randCode);
+    connect(coreProcess, &CoreProcess::radiusCode, this, &ConnectionSession::radiusCode);
     connect(coreProcess, &CoreProcess::ssoAuth, this, &ConnectionSession::ssoAuth);
     connect(coreProcess, &CoreProcess::askSudoPass,
             this, &ConnectionSession::handleSudoPasswordRequest);
