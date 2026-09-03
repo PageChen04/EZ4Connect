@@ -58,17 +58,12 @@ MainWindowCoordinator::MainWindowCoordinator(
         authenticationCoordinator,
         &AuthDialogCoordinator::requestTotpCode
     );
-    // aTrust 等协议的“动态/随机码”二次认证（核心会输出 "Please enter rand
-    // code:"）。该提示此前只被 hasInteractivePrompt() 识别（会冲刷输出行），
-    // 却没有对应的事件分支与对话框，导致验证码窗口不弹出。这里复用短信验证
-    // 码输入框（输入格式一致：验证码 + 换行），让用户输入收到的短信验证码。
     connect(
         connectionSession,
         &ConnectionSession::randCode,
         authenticationCoordinator,
         [this]() { authenticationCoordinator->requestSmsCode(false); }
     );
-    // aTrust RADIUS Access-Challenge：核心输出提示后，弹验证码输入框并把输入写回核心。
     connect(
         connectionSession,
         &ConnectionSession::radiusCode,
