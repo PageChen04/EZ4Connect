@@ -540,13 +540,11 @@ void MainWindow::setupTrayIcon()
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setIcon(
         QIcon(QPixmap(":/resource/icon.png").scaled(512, 512, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
-    trayIcon->setVisible(true);
     trayIcon->setToolTip(QApplication::applicationName());
     connect(trayIcon, &QSystemTrayIcon::activated, this, [&](QSystemTrayIcon::ActivationReason reason) {
         switch (reason)
         {
         case QSystemTrayIcon::Context:
-            trayMenu->popup(QCursor::pos());
             break;
         default:
             if (isHidden())
@@ -558,7 +556,6 @@ void MainWindow::setupTrayIcon()
             break;
         }
     });
-    trayIcon->show();
 
     trayConnectAction = new QAction("连接服务器", this);
     trayProfileMenu = new QMenu("配置选择", this);
@@ -578,6 +575,8 @@ void MainWindow::setupTrayIcon()
         setFocus();
     });
     connect(trayCloseAction, &QAction::triggered, this, &MainWindow::gracefullyQuit);
+    trayIcon->setContextMenu(trayMenu);
+    trayIcon->show();
 }
 
 void MainWindow::setupProfileMenu()
